@@ -1,0 +1,32 @@
+# Claude Code
+CLAUDE.md
+.claude/
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+
+# macOS
+.DS_Store
+*.swp
+*~.nib
+
+# CocoaPods
+Pods/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# API Keys (never commit)
+*.xcconfig
+Secrets.swift
