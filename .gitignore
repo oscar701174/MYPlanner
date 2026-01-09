@@ -2,6 +2,10 @@
 Exp_*
 **/Exp_*
 
+# Experimental files (temporary testing)
+Exp_*
+**/Exp_*
+
 # Xcode
 build/
 DerivedData/
