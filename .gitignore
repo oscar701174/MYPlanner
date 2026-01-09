@@ -32,3 +32,9 @@ fastlane/test_output
 # API Keys (never commit)
 *.xcconfig
 Secrets.swift
+APIKeys.swift
+**/APIKeys.swift
+.env
+*.env
+Config.plist
+**/Config.plist
