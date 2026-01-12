@@ -45,17 +45,10 @@ struct ScheduleCard: View {
 #Preview {
     VStack(spacing: 12) {
         ScheduleCard(
-            schedule: Schedule(title: "회의 준비하기", category: .meeting),
-            onTap: { print("Tapped") }
-        )
-        ScheduleCard(
-            schedule: Schedule(title: "자동차 수리", category: .personal),
-            onTap: { print("Tapped") }
-        )
-        ScheduleCard(
-            schedule: Schedule(title: "저녁 준비하기", category: .other),
+            schedule: PreviewData.singleSchedule,
             onTap: { print("Tapped") }
         )
     }
     .padding()
+    .modelContainer(PreviewData.container)
 }

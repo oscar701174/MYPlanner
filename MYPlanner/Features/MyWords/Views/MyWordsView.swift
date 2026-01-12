@@ -100,23 +100,5 @@ struct MyWordsView: View {
 
 #Preview {
     MyWordsView(schedule: PreviewData.singleSchedule)
-}
-
-#Preview("Multiple Expressions") {
-    MyWordsView(
-        schedule: Schedule(
-            title: "상품 회의 준비하기",
-            category: .work,
-            expressions: [
-                Expression(
-                    english: "Prepare for the product meeting.",
-                    accent: "pre-PARE for the PRO-duct MEET-ing"
-                ),
-                Expression(
-                    english: "Get ready for the product meeting.",
-                    accent: "get REA-dy for the PRO-duct MEET-ing"
-                )
-            ]
-        )
-    )
+        .modelContainer(PreviewData.container)
 }

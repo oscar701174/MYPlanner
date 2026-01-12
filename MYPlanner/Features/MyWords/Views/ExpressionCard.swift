@@ -55,23 +55,13 @@ struct ExpressionCard: View {
     VStack(spacing: 16) {
         ExpressionCard(
             index: 1,
-            expression: Expression(
-                english: "Prepare for the product meeting.",
-                accent: "pre-PARE for the PRO-duct MEET-ing"
-            )
+            expression: PreviewData.singleExpression
         ) {
             print("Listen tapped")
         } onSpeak: {
             print("Speak tapped")
         }
-
-        ExpressionCard(
-            index: 2,
-            expression: Expression(
-                english: "Get ready for the product meeting.",
-                accent: "get REA-dy for the PRO-duct MEET-ing"
-            )
-        )
     }
     .padding()
+    .modelContainer(PreviewData.container)
 }
