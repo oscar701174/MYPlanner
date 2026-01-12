@@ -16,23 +16,18 @@ final class Expression {
     var isPracticed: Bool
     var createdAt: Date
 
-    // Inverse relationship to Schedule
-    var schedule: Schedule?
-
     init(
         id: UUID = UUID(),
         english: String,
         accent: String = "",
         isPracticed: Bool = false,
-        createdAt: Date = Date(),
-        schedule: Schedule? = nil
+        createdAt: Date = Date()
     ) {
         self.id = id
         self.english = english
         self.accent = accent.isEmpty ? english : accent
         self.isPracticed = isPracticed
         self.createdAt = createdAt
-        self.schedule = schedule
     }
 }
 

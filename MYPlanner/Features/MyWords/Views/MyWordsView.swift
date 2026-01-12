@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MyWordsView: View {
     let schedule: Schedule

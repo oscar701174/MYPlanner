@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ScheduleView: View {
     @Environment(CalendarViewModel.self) private var calendarViewModel

@@ -8,6 +8,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ScheduleCard: View {
     let schedule: Schedule

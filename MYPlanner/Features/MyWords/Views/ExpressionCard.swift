@@ -9,6 +9,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ExpressionCard: View {
     let index: Int

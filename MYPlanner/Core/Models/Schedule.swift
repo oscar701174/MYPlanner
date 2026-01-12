@@ -17,7 +17,7 @@ final class Schedule {
     var createdAt: Date
 
     // One-to-many relationship with cascade delete
-    @Relationship(deleteRule: .cascade, inverse: \Expression.schedule)
+    @Relationship(deleteRule: .cascade)
     var expressions: [Expression]
 
     // Computed property for Category enum
@@ -78,9 +78,12 @@ extension Schedule {
 
     /// 날짜 범위로 필터링하는 Predicate 생성
     static func predicate(for date: Date) -> Predicate<Schedule> {
-        let range = dayRange(for: date)
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+
         return #Predicate<Schedule> { schedule in
-            schedule.date >= range.start && schedule.date < range.end
+            schedule.date >= startOfDay && schedule.date < endOfDay
         }
     }
 }
