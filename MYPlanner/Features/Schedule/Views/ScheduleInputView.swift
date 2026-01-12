@@ -10,24 +10,12 @@ struct ScheduleInputView: View {
 
     var onSave: ((String, Category) -> Void)?
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let labelFontSize: CGFloat = 14
-        static let inputFontSize: CGFloat = 15
-        static let inputHeight: CGFloat = 44
-        static let inputCornerRadius: CGFloat = 8
-        static let buttonHeight: CGFloat = 47
-        static let buttonWidth: CGFloat = 200
-        static let buttonCornerRadius: CGFloat = 12
-        static let horizontalPadding: CGFloat = 16
-    }
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: AppSizes.Spacing.extraLarge) {
             // Date Navigation (reusing shared component)
             DateIndicatorView(dateType: .day)
                 .frame(maxWidth: .infinity)
-                .frame(height: 46)
+                .frame(height: AppSizes.Height.dateIndicator)
 
             // Title Input
             titleInputView
@@ -38,30 +26,30 @@ struct ScheduleInputView: View {
             // Save Button
             saveButtonView
         }
-        .padding(.horizontal, Design.horizontalPadding)
+        .padding(.horizontal, AppSizes.Padding.horizontal)
     }
 
     // MARK: - Title Input
     private var titleInputView: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: AppSizes.Spacing.medium) {
             Text("title")
-                .font(.system(size: Design.labelFontSize))
+                .font(.system(size: AppSizes.FontSize.body))
                 .foregroundColor(AppColors.textSecondary)
 
             TextField("일정을 입력하세요", text: $title)
-                .font(.system(size: Design.inputFontSize))
-                .padding(.horizontal, Design.horizontalPadding)
-                .frame(height: Design.inputHeight)
+                .font(.system(size: AppSizes.FontSize.body))
+                .padding(.horizontal, AppSizes.Padding.horizontal)
+                .frame(height: AppSizes.Height.input)
                 .background(AppColors.surface)
-                .cornerRadius(Design.inputCornerRadius)
+                .cornerRadius(AppSizes.Radius.medium)
         }
     }
 
     // MARK: - Category Picker
     private var categoryPickerView: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: AppSizes.Spacing.medium) {
             Text("카테고리 선택")
-                .font(.system(size: Design.labelFontSize))
+                .font(.system(size: AppSizes.FontSize.body))
                 .foregroundColor(AppColors.textSecondary)
 
             Menu {
@@ -73,19 +61,19 @@ struct ScheduleInputView: View {
             } label: {
                 HStack {
                     Text(selectedCategory == .other && title.isEmpty ? "선택하기" : selectedCategory.rawValue)
-                        .font(.system(size: Design.inputFontSize))
-                        .foregroundColor(selectedCategory == .other && title.isEmpty ? AppColors.textPrimary : AppColors.textPrimary)
+                        .font(.system(size: AppSizes.FontSize.body))
+                        .foregroundColor(AppColors.textPrimary)
 
                     Spacer()
 
                     Text("▶")
-                        .font(.system(size: Design.labelFontSize))
+                        .font(.system(size: AppSizes.FontSize.body))
                         .foregroundColor(AppColors.textSecondary)
                 }
-                .padding(.horizontal, Design.horizontalPadding)
-                .frame(height: Design.inputHeight)
+                .padding(.horizontal, AppSizes.Padding.horizontal)
+                .frame(height: AppSizes.Height.input)
                 .background(AppColors.surface)
-                .cornerRadius(Design.inputCornerRadius)
+                .cornerRadius(AppSizes.Radius.medium)
             }
         }
     }
@@ -97,18 +85,18 @@ struct ScheduleInputView: View {
 
             Button(action: saveSchedule) {
                 Text("저장")
-                    .font(.system(size: Design.inputFontSize, weight: .bold))
+                    .font(.system(size: AppSizes.FontSize.body, weight: .bold))
                     .foregroundColor(AppColors.accentText)
-                    .frame(width: Design.buttonWidth, height: Design.buttonHeight)
+                    .frame(width: AppSizes.Width.buttonSave, height: AppSizes.Height.buttonSave)
                     .background(AppColors.accent)
-                    .cornerRadius(Design.buttonCornerRadius)
+                    .cornerRadius(AppSizes.Radius.large)
             }
             .disabled(title.isEmpty)
             .opacity(title.isEmpty ? 0.6 : 1.0)
 
             Spacer()
         }
-        .padding(.top, 8)
+        .padding(.top, AppSizes.Spacing.medium)
     }
 
     // MARK: - Actions

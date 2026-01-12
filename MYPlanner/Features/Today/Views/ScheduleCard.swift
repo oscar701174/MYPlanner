@@ -13,23 +13,11 @@ struct ScheduleCard: View {
     let schedule: Schedule
     var onTap: (() -> Void)?
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let cardHeight: CGFloat = 68
-        static let cardCornerRadius: CGFloat = 12
-        static let titleFontSize: CGFloat = 16
-        static let buttonWidth: CGFloat = 32
-        static let buttonHeight: CGFloat = 32
-        static let buttonCornerRadius: CGFloat = 8
-        static let arrowFontSize: CGFloat = 14
-        static let horizontalPadding: CGFloat = 16
-    }
-
     var body: some View {
         HStack {
             // Schedule title
             Text(schedule.title)
-                .font(.system(size: Design.titleFontSize, weight: .regular))
+                .font(.system(size: AppSizes.FontSize.medium, weight: .regular))
                 .foregroundColor(AppColors.textPrimary)
                 .lineLimit(1)
 
@@ -38,17 +26,17 @@ struct ScheduleCard: View {
             // Arrow button
             Button(action: { onTap?() }) {
                 Text("▶")
-                    .font(.system(size: Design.arrowFontSize))
+                    .font(.system(size: AppSizes.FontSize.body))
                     .foregroundColor(AppColors.accentText)
-                    .frame(width: Design.buttonWidth, height: Design.buttonHeight)
+                    .frame(width: AppSizes.Width.buttonSmall, height: AppSizes.Height.button)
                     .background(AppColors.accent)
-                    .cornerRadius(Design.buttonCornerRadius)
+                    .cornerRadius(AppSizes.Radius.medium)
             }
         }
-        .padding(.horizontal, Design.horizontalPadding)
-        .frame(height: Design.cardHeight)
+        .padding(.horizontal, AppSizes.Padding.horizontal)
+        .frame(height: AppSizes.Height.card)
         .background(AppColors.surface)
-        .cornerRadius(Design.cardCornerRadius)
+        .cornerRadius(AppSizes.Radius.large)
     }
 }
 

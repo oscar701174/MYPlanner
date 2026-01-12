@@ -12,27 +12,19 @@ import SwiftUI
 struct TagChip: View {
     let category: Category
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let fontSize: CGFloat = 12
-        static let horizontalPadding: CGFloat = 10
-        static let verticalPadding: CGFloat = 4
-        static let cornerRadius: CGFloat = 12
-    }
-
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: AppSizes.Spacing.small) {
             Image(systemName: category.icon)
-                .font(.system(size: Design.fontSize))
+                .font(.system(size: AppSizes.FontSize.small))
 
             Text(category.rawValue)
-                .font(.system(size: Design.fontSize, weight: .medium))
+                .font(.system(size: AppSizes.FontSize.small, weight: .medium))
         }
         .foregroundColor(category.color)
-        .padding(.horizontal, Design.horizontalPadding)
-        .padding(.vertical, Design.verticalPadding)
+        .padding(.horizontal, AppSizes.Padding.medium)
+        .padding(.vertical, AppSizes.Spacing.small)
         .background(category.color.opacity(0.15))
-        .cornerRadius(Design.cornerRadius)
+        .cornerRadius(AppSizes.Radius.large)
     }
 }
 

@@ -12,22 +12,16 @@ struct MyWordsTabView: View {
     @State private var schedules: [Schedule] = PreviewData.schedules.filter { !$0.expressions.isEmpty }
     @State private var selectedSchedule: Schedule?
 
-    // MARK: - Design Constants
-    private enum Design {
-        static let horizontalPadding: CGFloat = 16
-        static let cardSpacing: CGFloat = 12
-    }
-
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
+            VStack(spacing: AppSizes.Spacing.extraLarge) {
                 if schedules.isEmpty {
                     emptyState
                 } else {
                     scheduleList
                 }
             }
-            .padding(.horizontal, Design.horizontalPadding)
+            .padding(.horizontal, AppSizes.Padding.horizontal)
             .navigationTitle("My Words")
             .navigationBarTitleDisplayMode(.large)
             .navigationDestination(item: $selectedSchedule) { schedule in
@@ -40,7 +34,7 @@ struct MyWordsTabView: View {
     // MARK: - Schedule List
     private var scheduleList: some View {
         ScrollView {
-            LazyVStack(spacing: Design.cardSpacing) {
+            LazyVStack(spacing: AppSizes.Spacing.large) {
                 ForEach(schedules) { schedule in
                     ScheduleExpressionCard(schedule: schedule) {
                         selectedSchedule = schedule
@@ -52,14 +46,14 @@ struct MyWordsTabView: View {
 
     // MARK: - Empty State
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: AppSizes.Spacing.large) {
             Text("📖")
                 .font(.system(size: 48))
             Text("아직 학습할 표현이 없습니다")
-                .font(.system(size: 16))
+                .font(.system(size: AppSizes.FontSize.medium))
                 .foregroundColor(AppColors.textSecondary)
             Text("일정을 추가하고 영어 표현을 생성해보세요")
-                .font(.system(size: 14))
+                .font(.system(size: AppSizes.FontSize.body))
                 .foregroundColor(AppColors.textTertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -72,40 +66,32 @@ private struct ScheduleExpressionCard: View {
     let schedule: Schedule
     var onTap: (() -> Void)?
 
-    private enum Design {
-        static let cardHeight: CGFloat = 72
-        static let cardCornerRadius: CGFloat = 12
-        static let titleFontSize: CGFloat = 16
-        static let countFontSize: CGFloat = 14
-        static let horizontalPadding: CGFloat = 16
-    }
-
     var body: some View {
         Button(action: { onTap?() }) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: AppSizes.Spacing.small) {
                     Text(schedule.title)
-                        .font(.system(size: Design.titleFontSize, weight: .medium))
+                        .font(.system(size: AppSizes.FontSize.medium, weight: .medium))
                         .foregroundColor(AppColors.textPrimary)
 
                     Text("\(schedule.expressions.count)개 표현")
-                        .font(.system(size: Design.countFontSize))
+                        .font(.system(size: AppSizes.FontSize.body))
                         .foregroundColor(AppColors.textSecondary)
                 }
 
                 Spacer()
 
                 Text("▶")
-                    .font(.system(size: 14))
+                    .font(.system(size: AppSizes.FontSize.body))
                     .foregroundColor(AppColors.accentText)
-                    .frame(width: 32, height: 32)
+                    .frame(width: AppSizes.Width.buttonSmall, height: AppSizes.Height.button)
                     .background(AppColors.accent)
-                    .cornerRadius(8)
+                    .cornerRadius(AppSizes.Radius.medium)
             }
-            .padding(.horizontal, Design.horizontalPadding)
-            .frame(height: Design.cardHeight)
+            .padding(.horizontal, AppSizes.Padding.horizontal)
+            .frame(height: AppSizes.Height.card)
             .background(AppColors.surface)
-            .cornerRadius(Design.cardCornerRadius)
+            .cornerRadius(AppSizes.Radius.large)
         }
         .buttonStyle(.plain)
     }

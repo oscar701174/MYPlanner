@@ -12,23 +12,10 @@ struct MyWordsView: View {
     let schedule: Schedule
     @Environment(\.dismiss) private var dismiss
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let horizontalPadding: CGFloat = 16
-        static let tagSpacing: CGFloat = 8
-        static let sectionSpacing: CGFloat = 12
-        static let cardSpacing: CGFloat = 16
-        static let sectionTitleFontSize: CGFloat = 16
-        static let tagFontSize: CGFloat = 14
-        static let tagHeight: CGFloat = 28
-        static let tagCornerRadius: CGFloat = 14
-        static let tagHorizontalPadding: CGFloat = 12
-    }
-
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: Design.sectionSpacing) {
+                VStack(alignment: .leading, spacing: AppSizes.Spacing.large) {
                     // Tags
                     tagsRow
 
@@ -37,15 +24,15 @@ struct MyWordsView: View {
 
                     // Section Header
                     Text("유용한 영어 표현")
-                        .font(.system(size: Design.sectionTitleFontSize))
+                        .font(.system(size: AppSizes.FontSize.medium))
                         .foregroundColor(AppColors.textPrimary)
-                        .padding(.top, 8)
+                        .padding(.top, AppSizes.Spacing.medium)
 
                     // Expression Cards
                     expressionList
                 }
-                .padding(.horizontal, Design.horizontalPadding)
-                .padding(.top, Design.sectionSpacing)
+                .padding(.horizontal, AppSizes.Padding.horizontal)
+                .padding(.top, AppSizes.Spacing.large)
             }
             .background(AppColors.background)
             .navigationBarTitleDisplayMode(.inline)
@@ -61,14 +48,14 @@ struct MyWordsView: View {
     private var backButton: some View {
         Button(action: { dismiss() }) {
             Text("◀")
-                .font(.system(size: 20))
+                .font(.system(size: AppSizes.FontSize.large))
                 .foregroundColor(AppColors.textPrimary)
         }
     }
 
     // MARK: - Tags Row
     private var tagsRow: some View {
-        HStack(spacing: Design.tagSpacing) {
+        HStack(spacing: AppSizes.Spacing.medium) {
             hashTag(schedule.category.rawValue)
 
             // Additional tag based on category type
@@ -80,17 +67,17 @@ struct MyWordsView: View {
 
     private func hashTag(_ text: String) -> some View {
         Text("#\(text)")
-            .font(.system(size: Design.tagFontSize))
+            .font(.system(size: AppSizes.FontSize.body))
             .foregroundColor(AppColors.accent)
-            .padding(.horizontal, Design.tagHorizontalPadding)
-            .frame(height: Design.tagHeight)
+            .padding(.horizontal, AppSizes.Padding.medium)
+            .frame(height: AppSizes.Height.tag)
             .background(Color(hex: "FFF2E0"))
-            .cornerRadius(Design.tagCornerRadius)
+            .cornerRadius(AppSizes.Radius.pill)
     }
 
     // MARK: - Expression List
     private var expressionList: some View {
-        VStack(spacing: Design.cardSpacing) {
+        VStack(spacing: AppSizes.Spacing.extraLarge) {
             ForEach(Array(schedule.expressions.enumerated()), id: \.element.id) { index, expression in
                 ExpressionCard(
                     index: index + 1,

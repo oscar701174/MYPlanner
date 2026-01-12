@@ -7,14 +7,6 @@ struct CalendarDayCell: View {
     let hasEvent: Bool
     let onTap: () -> Void
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let cellSize: CGFloat = 43
-        static let selectedCircleSize: CGFloat = 32
-        static let eventDotSize: CGFloat = 6
-        static let dayFontSize: CGFloat = 16
-    }
-
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 2) {
@@ -23,24 +15,24 @@ struct CalendarDayCell: View {
                     if isSelected {
                         Circle()
                             .fill(AppColors.accent)
-                            .frame(width: Design.selectedCircleSize, height: Design.selectedCircleSize)
+                            .frame(width: AppSizes.Width.selectedCircle, height: AppSizes.Width.selectedCircle)
                     }
 
                     // Day number
                     Text("\(date.day)")
-                        .font(.system(size: Design.dayFontSize, weight: isSelected ? .semibold : .regular))
+                        .font(.system(size: AppSizes.FontSize.medium, weight: isSelected ? .semibold : .regular))
                         .foregroundColor(dayTextColor)
                 }
-                .frame(width: Design.selectedCircleSize, height: Design.selectedCircleSize)
+                .frame(width: AppSizes.Width.selectedCircle, height: AppSizes.Width.selectedCircle)
 
                 // Event indicator dot
                 Circle()
                     .fill(hasEvent ? AppColors.accent : Color.clear)
-                    .frame(width: Design.eventDotSize, height: Design.eventDotSize)
+                    .frame(width: AppSizes.Width.eventDot, height: AppSizes.Width.eventDot)
             }
         }
         .buttonStyle(.plain)
-        .frame(width: Design.cellSize, height: Design.cellSize)
+        .frame(width: AppSizes.Height.calendarCell, height: AppSizes.Height.calendarCell)
     }
 
     // MARK: - Computed Properties

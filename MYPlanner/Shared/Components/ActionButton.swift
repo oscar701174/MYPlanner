@@ -33,23 +33,15 @@ struct ActionButton: View {
     var isActive: Bool = false
     var onTap: (() -> Void)?
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let fontSize: CGFloat = 14
-        static let height: CGFloat = 32
-        static let cornerRadius: CGFloat = 6
-        static let horizontalPadding: CGFloat = 10
-    }
-
     var body: some View {
         Button(action: { onTap?() }) {
             Text(type.title)
-                .font(.system(size: Design.fontSize))
+                .font(.system(size: AppSizes.FontSize.body))
                 .foregroundColor(AppColors.accentText)
-                .padding(.horizontal, Design.horizontalPadding)
-                .frame(height: Design.height)
+                .padding(.horizontal, AppSizes.Padding.medium)
+                .frame(height: AppSizes.Height.button)
                 .background(isActive ? AppColors.accent.opacity(0.7) : AppColors.accent)
-                .cornerRadius(Design.cornerRadius)
+                .cornerRadius(AppSizes.Radius.small)
         }
         .buttonStyle(.plain)
     }

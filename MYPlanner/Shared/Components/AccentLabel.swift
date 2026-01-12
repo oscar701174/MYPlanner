@@ -12,16 +12,9 @@ import SwiftUI
 struct AccentLabel: View {
     let accent: String
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let fontSize: CGFloat = 14
-        static let normalColor = AppColors.textSecondary  // #666666
-        static let stressedColor = AppColors.accent       // #FF8C00
-    }
-
     var body: some View {
         Text(attributedAccent)
-            .font(.system(size: Design.fontSize))
+            .font(.system(size: AppSizes.FontSize.body))
     }
 
     // MARK: - Attributed String
@@ -46,11 +39,11 @@ struct AccentLabel: View {
                     && syllable.contains(where: { $0.isUppercase })
 
                 if isStressed {
-                    syllableStr.foregroundColor = Design.stressedColor
-                    syllableStr.font = .system(size: Design.fontSize, weight: .bold)
+                    syllableStr.foregroundColor = AppColors.accent
+                    syllableStr.font = .system(size: AppSizes.FontSize.body, weight: .bold)
                 } else {
-                    syllableStr.foregroundColor = Design.normalColor
-                    syllableStr.font = .system(size: Design.fontSize, weight: .regular)
+                    syllableStr.foregroundColor = AppColors.textSecondary
+                    syllableStr.font = .system(size: AppSizes.FontSize.body, weight: .regular)
                 }
 
                 result += syllableStr

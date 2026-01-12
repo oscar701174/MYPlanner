@@ -13,26 +13,20 @@ struct TodayView: View {
     @State private var schedules: [Schedule] = PreviewData.todaySchedules
     @State private var selectedSchedule: Schedule?
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let horizontalPadding: CGFloat = 16
-        static let cardSpacing: CGFloat = 12
-        static let addButtonSize: CGFloat = 32
-    }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
+            VStack(spacing: AppSizes.Spacing.extraLarge) {
                 // Date Navigation
                 DateIndicatorView(dateType: .day)
-                    .frame(height: 40)
+                    .frame(height: AppSizes.Height.dateIndicator)
 
                 // Schedule List
                 scheduleListView
 
                 Spacer()
             }
-            .padding(.horizontal, Design.horizontalPadding)
+            .padding(.horizontal, AppSizes.Padding.horizontal)
             .navigationTitle("Today")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -51,7 +45,7 @@ struct TodayView: View {
     private var addButton: some View {
         Button(action: addSchedule) {
             Text("⊕")
-                .font(.system(size: Design.addButtonSize))
+                .font(.system(size: AppSizes.Height.button))
                 .foregroundColor(AppColors.accent)
         }
     }
@@ -59,7 +53,7 @@ struct TodayView: View {
     // MARK: - Schedule List
     private var scheduleListView: some View {
         ScrollView {
-            LazyVStack(spacing: Design.cardSpacing) {
+            LazyVStack(spacing: AppSizes.Spacing.large) {
                 ForEach(schedules) { schedule in
                     ScheduleCard(schedule: schedule) {
                         navigateToDetail(schedule)

@@ -12,22 +12,14 @@ import SwiftUI
 struct TitleCard: View {
     let title: String
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let height: CGFloat = 42
-        static let cornerRadius: CGFloat = 12
-        static let fontSize: CGFloat = 20
-        static let horizontalPadding: CGFloat = 16
-    }
-
     var body: some View {
         Text(title)
-            .font(.system(size: Design.fontSize, weight: .semibold))
+            .font(.system(size: AppSizes.FontSize.large, weight: .semibold))
             .foregroundColor(AppColors.accentText)
             .frame(maxWidth: .infinity)
-            .frame(height: Design.height)
+            .frame(height: AppSizes.Height.titleCard)
             .background(AppColors.accent)
-            .cornerRadius(Design.cornerRadius)
+            .cornerRadius(AppSizes.Radius.large)
     }
 }
 

@@ -3,12 +3,6 @@ import SwiftUI
 struct CalendarView: View {
     @Environment(CalendarViewModel.self) private var calendarViewModel
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let weekdayFontSize: CGFloat = 14
-        static let rowHeight: CGFloat = 44
-    }
-
     private let weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
     private let columns = Array(repeating: GridItem(.flexible()), count: 7)
 
@@ -20,7 +14,7 @@ struct CalendarView: View {
             // Weekday header
             ForEach(weekdays, id: \.self) { day in
                 Text(day)
-                    .font(.system(size: Design.weekdayFontSize, weight: .regular))
+                    .font(.system(size: AppSizes.FontSize.body, weight: .regular))
                     .foregroundColor(AppColors.textSecondary)
                     .frame(height: 30)
             }
@@ -34,15 +28,15 @@ struct CalendarView: View {
                         hasEvent: hasEvent(on: date),
                         onTap: { selectDate(date) }
                     )
-                    .frame(height: Design.rowHeight)
+                    .frame(height: AppSizes.Height.navBar)
                 } else {
                     // Empty cell for days before first day of month
                     Color.clear
-                        .frame(height: Design.rowHeight)
+                        .frame(height: AppSizes.Height.navBar)
                 }
             }
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, AppSizes.Padding.medium)
     }
 
     // MARK: - Helper Methods

@@ -16,26 +16,15 @@ struct ExpressionCard: View {
     var onListen: (() -> Void)?
     var onSpeak: (() -> Void)?
 
-    // MARK: - Design Constants (from Figma)
-    private enum Design {
-        static let cardHeight: CGFloat = 139
-        static let cardCornerRadius: CGFloat = 12
-        static let borderWidth: CGFloat = 1
-        static let padding: CGFloat = 16
-        static let expressionFontSize: CGFloat = 16
-        static let contentSpacing: CGFloat = 12
-        static let accentRowSpacing: CGFloat = 8
-    }
-
     var body: some View {
-        VStack(alignment: .leading, spacing: Design.contentSpacing) {
+        VStack(alignment: .leading, spacing: AppSizes.Spacing.large) {
             // Expression text
             Text("\(index). \(expression.english)")
-                .font(.system(size: Design.expressionFontSize))
+                .font(.system(size: AppSizes.FontSize.medium))
                 .foregroundColor(AppColors.textPrimary)
 
             // Accent row: Listen button + accent text
-            HStack(spacing: Design.accentRowSpacing) {
+            HStack(spacing: AppSizes.Spacing.medium) {
                 ActionButton(type: .listen) {
                     onListen?()
                 }
@@ -48,14 +37,14 @@ struct ExpressionCard: View {
                 onSpeak?()
             }
         }
-        .padding(Design.padding)
+        .padding(AppSizes.Padding.horizontal)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: Design.cardHeight)
+        .frame(height: AppSizes.Height.cardLarge)
         .background(AppColors.background)
-        .cornerRadius(Design.cardCornerRadius)
+        .cornerRadius(AppSizes.Radius.large)
         .overlay(
-            RoundedRectangle(cornerRadius: Design.cardCornerRadius)
-                .stroke(AppColors.border, lineWidth: Design.borderWidth)
+            RoundedRectangle(cornerRadius: AppSizes.Radius.large)
+                .stroke(AppColors.border, lineWidth: AppSizes.Border.width)
         )
     }
 }
