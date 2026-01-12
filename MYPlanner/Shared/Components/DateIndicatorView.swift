@@ -1,3 +1,9 @@
+//
+//  DateIndicatorView.swift
+//  MYPlanner
+//
+//  Date navigation component with previous/next buttons
+//
 
 import SwiftUI
 
@@ -8,81 +14,72 @@ enum CalendarType {
 }
 
 struct DateIndicatorView: View {
-    @Environment(CalendarViewModel.self) var dateHolder
-    private var date: CalendarType = .day
-    
+    @Environment(CalendarViewModel.self) var calendarViewModel
+    private var dateType: CalendarType = .day
+
     init(dateType: CalendarType = .day) {
-        self.date = dateType
+        self.dateType = dateType
     }
-    
-    var selectedDate: String {
-        switch date {
+
+    var displayText: String {
+        switch dateType {
         case .year:
-            return dateHolder.date.yearString
-            
+            return calendarViewModel.displayedMonth.yearString
         case .month:
-            return dateHolder.date.monthYearString
-            
+            return calendarViewModel.displayedMonth.monthYearString
         case .day:
-            return dateHolder.date.dayMonthYearString
+            return calendarViewModel.selectedDate.dayMonthYearString
         }
     }
-    
+
     var body: some View {
-        HStack
-        {
-            Button(action: {previous(date)},
-                   label: {
+        HStack {
+            Button(action: { previous() }) {
                 Image(systemName: "arrowtriangle.left.fill")
-                    .foregroundColor(.gray)
+                    .foregroundColor(AppColors.textSecondary)
             }
-            )
-            
-            Text(selectedDate)
-                .font(.system(size: 14, weight: .medium, design: .default))
+
+            Text(displayText)
+                .font(.system(size: AppSizes.FontSize.body, weight: .medium))
+                .foregroundColor(AppColors.textPrimary)
                 .onTapGesture {
-                    dateHolder.date = Date()
+                    calendarViewModel.goToToday()
                 }
-            
-            Button(action: {next(date)},
-                   label: {
+
+            Button(action: { next() }) {
                 Image(systemName: "arrowtriangle.right.fill")
-                    .foregroundColor(.gray)
+                    .foregroundColor(AppColors.textSecondary)
             }
-            )
-            
         }
     }
-    
-    
-    func previous(_ date: CalendarType) {
-        switch date {
+
+    private func previous() {
+        switch dateType {
         case .year:
-            dateHolder.date = dateHolder.date.previousYear
-            
+            calendarViewModel.displayedMonth = calendarViewModel.displayedMonth.previousYear
         case .month:
-            dateHolder.date = dateHolder.date.previousMonth
-            
+            calendarViewModel.previousMonth()
         case .day:
-            dateHolder.date = dateHolder.date.previousDay
+            calendarViewModel.previousDay()
         }
     }
-    
-    func next(_ date: CalendarType) {
-        switch date {
+
+    private func next() {
+        switch dateType {
         case .year:
-            dateHolder.date = dateHolder.date.nextYear
-            
+            calendarViewModel.displayedMonth = calendarViewModel.displayedMonth.nextYear
         case .month:
-            dateHolder.date = dateHolder.date.nextMonth
-            
+            calendarViewModel.nextMonth()
         case .day:
-            dateHolder.date = dateHolder.date.nextDay
+            calendarViewModel.nextDay()
         }
     }
 }
 
 #Preview {
-    DateIndicatorView()
-        .environment(CalendarViewModel())
+    VStack(spacing: 20) {
+        DateIndicatorView(dateType: .month)
+        DateIndicatorView(dateType: .day)
+    }
+    .environment(CalendarViewModel())
 }

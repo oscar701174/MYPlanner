@@ -1,17 +1,63 @@
+//
+//  CalendarViewModel.swift
+//  MYPlanner
+//
+//  Manages calendar state - current month display and selected date
+//
 
 import Foundation
 
 @Observable
 class CalendarViewModel {
-    var date: Date = Date()
-    var day: String {
-        date.dayString
+    /// The currently selected date (for schedule input and today view)
+    var selectedDate: Date = Date()
+
+    /// The month being displayed in the calendar
+    var displayedMonth: Date = Date()
+
+    // MARK: - Display Helpers
+
+    var dayString: String {
+        selectedDate.dayString
     }
-    var month: String {
-        date.monthString
+
+    var monthString: String {
+        displayedMonth.monthString
     }
-    var year: String {
-        date.yearString
+
+    var yearString: String {
+        displayedMonth.yearString
+    }
+
+    // MARK: - Navigation
+
+    func nextMonth() {
+        displayedMonth = displayedMonth.nextMonth
+    }
+
+    func previousMonth() {
+        displayedMonth = displayedMonth.previousMonth
+    }
+
+    func nextDay() {
+        selectedDate = selectedDate.nextDay
+    }
+
+    func previousDay() {
+        selectedDate = selectedDate.previousDay
+    }
+
+    /// Select a date and update displayed month if needed
+    func selectDate(_ date: Date) {
+        selectedDate = date
+        if !date.isSameMonth(as: displayedMonth) {
+            displayedMonth = date
+        }
+    }
+
+    /// Go to today
+    func goToToday() {
+        selectedDate = Date()
+        displayedMonth = Date()
     }
 }
-

@@ -3,19 +3,25 @@
 //  MYPlanner
 //
 //  My Words tab wrapper - displays schedules with expressions
-//  User can tap to navigate to MyWordsView detail
+//  Uses SwiftData @Query for fetching schedules
 //
 
 import SwiftUI
+import SwiftData
 
 struct MyWordsTabView: View {
-    @State private var schedules: [Schedule] = PreviewData.schedules.filter { !$0.expressions.isEmpty }
+    @Query(sort: \Schedule.createdAt, order: .reverse) private var allSchedules: [Schedule]
     @State private var selectedSchedule: Schedule?
+
+    // Filter schedules that have expressions
+    private var schedulesWithExpressions: [Schedule] {
+        allSchedules.filter { !$0.expressions.isEmpty }
+    }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: AppSizes.Spacing.extraLarge) {
-                if schedules.isEmpty {
+                if schedulesWithExpressions.isEmpty {
                     emptyState
                 } else {
                     scheduleList
@@ -35,7 +41,7 @@ struct MyWordsTabView: View {
     private var scheduleList: some View {
         ScrollView {
             LazyVStack(spacing: AppSizes.Spacing.large) {
-                ForEach(schedules) { schedule in
+                ForEach(schedulesWithExpressions) { schedule in
                     ScheduleExpressionCard(schedule: schedule) {
                         selectedSchedule = schedule
                     }
@@ -101,4 +107,10 @@ private struct ScheduleExpressionCard: View {
 
 #Preview {
     MyWordsTabView()
+        .modelContainer(PreviewData.container)
+}
+
+#Preview("Empty") {
+    MyWordsTabView()
+        .modelContainer(PreviewData.emptyContainer)
 }

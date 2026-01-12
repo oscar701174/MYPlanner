@@ -2,18 +2,29 @@
 //  Schedule.swift
 //  MYPlanner
 //
-//  일정 모델 (Mock용 struct, Step 8에서 @Model로 변환)
+//  일정 모델 - SwiftData @Model
 //
 
 import Foundation
+import SwiftData
 
-struct Schedule: Identifiable, Equatable, Hashable {
-    let id: UUID
+@Model
+final class Schedule {
+    var id: UUID
     var title: String
     var date: Date
-    var category: Category
+    var categoryRaw: String
+    var createdAt: Date
+
+    // One-to-many relationship with cascade delete
+    @Relationship(deleteRule: .cascade, inverse: \Expression.schedule)
     var expressions: [Expression]
-    let createdAt: Date
+
+    // Computed property for Category enum
+    var category: Category {
+        get { Category(rawValue: categoryRaw) ?? .other }
+        set { categoryRaw = newValue.rawValue }
+    }
 
     init(
         id: UUID = UUID(),
@@ -26,7 +37,7 @@ struct Schedule: Identifiable, Equatable, Hashable {
         self.id = id
         self.title = title
         self.date = date
-        self.category = category
+        self.categoryRaw = category.rawValue
         self.expressions = expressions
         self.createdAt = createdAt
     }
@@ -51,5 +62,25 @@ extension Schedule {
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "yyyy년 M월 d일"
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Query Helpers
+
+extension Schedule {
+    /// 특정 날짜의 시작과 끝 범위 생성
+    static func dayRange(for date: Date) -> (start: Date, end: Date) {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+        return (startOfDay, endOfDay)
+    }
+
+    /// 날짜 범위로 필터링하는 Predicate 생성
+    static func predicate(for date: Date) -> Predicate<Schedule> {
+        let range = dayRange(for: date)
+        return #Predicate<Schedule> { schedule in
+            schedule.date >= range.start && schedule.date < range.end
+        }
     }
 }

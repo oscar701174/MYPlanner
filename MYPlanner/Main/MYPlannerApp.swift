@@ -2,7 +2,7 @@
 //  MYPlannerApp.swift
 //  MYPlanner
 //
-//  Created by oscar on 1/7/26.
+//  Main app entry point with SwiftData ModelContainer
 //
 
 import SwiftUI
@@ -12,9 +12,13 @@ import SwiftData
 struct MYPlannerApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-
+            Schedule.self,
+            Expression.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false
+        )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

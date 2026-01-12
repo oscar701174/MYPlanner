@@ -1,3 +1,10 @@
+//
+//  ScheduleView.swift
+//  MYPlanner
+//
+//  Schedule tab - calendar and schedule input form
+//
+
 import SwiftUI
 
 struct ScheduleView: View {
@@ -17,10 +24,7 @@ struct ScheduleView: View {
                     .padding(.vertical, 16)
 
                 // Schedule Input Form
-                ScheduleInputView { title, category in
-                    // TODO: Save to SwiftData
-                    print("Save schedule: \(title) - \(category.rawValue)")
-                }
+                ScheduleInputView()
 
                 Spacer()
             }
@@ -33,4 +37,5 @@ struct ScheduleView: View {
 #Preview {
     ScheduleView()
         .environment(CalendarViewModel())
+        .modelContainer(PreviewData.container)
 }

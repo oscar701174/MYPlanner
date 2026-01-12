@@ -2,27 +2,37 @@
 //  Expression.swift
 //  MYPlanner
 //
-//  영어 표현 모델 (Mock용 struct, Step 8에서 @Model로 변환)
+//  영어 표현 모델 - SwiftData @Model
 //
 
 import Foundation
+import SwiftData
 
-struct Expression: Identifiable, Equatable, Hashable {
-    let id: UUID
+@Model
+final class Expression {
+    var id: UUID
     var english: String
     var accent: String  // "pre-PARE for the PRO-duct MEET-ing"
     var isPracticed: Bool
+    var createdAt: Date
+
+    // Inverse relationship to Schedule
+    var schedule: Schedule?
 
     init(
         id: UUID = UUID(),
         english: String,
         accent: String = "",
-        isPracticed: Bool = false
+        isPracticed: Bool = false,
+        createdAt: Date = Date(),
+        schedule: Schedule? = nil
     ) {
         self.id = id
         self.english = english
         self.accent = accent.isEmpty ? english : accent
         self.isPracticed = isPracticed
+        self.createdAt = createdAt
+        self.schedule = schedule
     }
 }
 

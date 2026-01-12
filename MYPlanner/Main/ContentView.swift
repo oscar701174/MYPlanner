@@ -72,4 +72,5 @@ enum Tab: String, CaseIterable {
 
 #Preview {
     ContentView()
+        .modelContainer(PreviewData.container)
 }

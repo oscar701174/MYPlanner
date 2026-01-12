@@ -1,13 +1,20 @@
+//
+//  CalendarView.swift
+//  MYPlanner
+//
+//  Monthly calendar grid with date selection and event indicators
+//  Uses SwiftData @Query to show event dots
+//
+
 import SwiftUI
+import SwiftData
 
 struct CalendarView: View {
     @Environment(CalendarViewModel.self) private var calendarViewModel
+    @Query(sort: \Schedule.date) private var allSchedules: [Schedule]
 
     private let weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
     private let columns = Array(repeating: GridItem(.flexible()), count: 7)
-
-    // TODO: Replace with actual events from SwiftData
-    private let datesWithEvents: Set<Int> = [5, 15, 22, 26]
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 0) {
@@ -20,7 +27,7 @@ struct CalendarView: View {
             }
 
             // Calendar days
-            ForEach(Array(calendarViewModel.date.calendarGridDates().enumerated()), id: \.offset) { index, date in
+            ForEach(Array(calendarViewModel.displayedMonth.calendarGridDates().enumerated()), id: \.offset) { index, date in
                 if let date = date {
                     CalendarDayCell(
                         date: date,
@@ -42,20 +49,20 @@ struct CalendarView: View {
     // MARK: - Helper Methods
 
     private func isSelected(_ date: Date) -> Bool {
-        date.isSameDay(as: calendarViewModel.date)
+        date.isSameDay(as: calendarViewModel.selectedDate)
     }
 
     private func hasEvent(on date: Date) -> Bool {
-        // TODO: Check actual events from SwiftData
-        datesWithEvents.contains(date.day)
+        allSchedules.contains { $0.isSameDay(as: date) }
     }
 
     private func selectDate(_ date: Date) {
-        calendarViewModel.date = date
+        calendarViewModel.selectDate(date)
     }
 }
 
 #Preview {
     CalendarView()
         .environment(CalendarViewModel())
+        .modelContainer(PreviewData.container)
 }

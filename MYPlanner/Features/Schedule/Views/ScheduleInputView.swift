@@ -1,14 +1,20 @@
+//
+//  ScheduleInputView.swift
+//  MYPlanner
+//
+//  Schedule input form - saves to SwiftData
+//
 
 import SwiftUI
+import SwiftData
 
 struct ScheduleInputView: View {
     @Environment(CalendarViewModel.self) private var calendarViewModel
+    @Environment(\.modelContext) private var modelContext
 
     @State private var title: String = ""
     @State private var selectedCategory: Category = .other
     @State private var showCategoryPicker: Bool = false
-
-    var onSave: ((String, Category) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSizes.Spacing.extraLarge) {
@@ -102,7 +108,15 @@ struct ScheduleInputView: View {
     // MARK: - Actions
     private func saveSchedule() {
         guard !title.isEmpty else { return }
-        onSave?(title, selectedCategory)
+
+        let schedule = Schedule(
+            title: title,
+            date: calendarViewModel.selectedDate,
+            category: selectedCategory
+        )
+
+        modelContext.insert(schedule)
+
         // Reset form
         title = ""
         selectedCategory = .other
@@ -112,13 +126,7 @@ struct ScheduleInputView: View {
 // MARK: - Preview
 
 #Preview {
-    ScheduleInputView { title, category in
-        print("Saved: \(title) - \(category.rawValue)")
-    }
-    .environment(CalendarViewModel())
-}
-
-#Preview("With Content") {
     ScheduleInputView()
         .environment(CalendarViewModel())
+        .modelContainer(PreviewData.container)
 }
