@@ -5,24 +5,27 @@ struct ScheduleView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 10) {
+            VStack(spacing: 0) {
+                // Month Navigation Header
                 DateIndicatorView(dateType: .month)
+                    .padding(.vertical, 8)
+
+                // Calendar Grid
                 CalendarView()
+
+                Divider()
+                    .padding(.vertical, 16)
+
+                // Schedule Input Form
+                ScheduleInputView { title, category in
+                    // TODO: Save to SwiftData
+                    print("Save schedule: \(title) - \(category.rawValue)")
+                }
 
                 Spacer()
             }
             .navigationTitle("Schedule")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        // Add schedule action
-                    }) {
-                        Image(systemName: "plus")
-                            .foregroundColor(AppColors.accent)
-                    }
-                }
-            }
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
