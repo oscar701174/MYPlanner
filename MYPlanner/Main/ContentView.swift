@@ -27,7 +27,7 @@ struct ContentView: View {
                 }
                 .tag(Tab.today)
 
-            MyWordsView()
+            MyWordsTabView()
                 .tabItem {
                     Label(Tab.myWords.title, systemImage: Tab.myWords.icon)
                 }

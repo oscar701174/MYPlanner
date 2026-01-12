@@ -11,6 +11,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(CalendarViewModel.self) private var calendarViewModel
     @State private var schedules: [Schedule] = PreviewData.todaySchedules
+    @State private var selectedSchedule: Schedule?
 
     // MARK: - Design Constants (from Figma)
     private enum Design {
@@ -38,6 +39,10 @@ struct TodayView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     addButton
                 }
+            }
+            .navigationDestination(item: $selectedSchedule) { schedule in
+                MyWordsView(schedule: schedule)
+                    .navigationBarBackButtonHidden(true)
             }
         }
     }
@@ -71,8 +76,7 @@ struct TodayView: View {
     }
 
     private func navigateToDetail(_ schedule: Schedule) {
-        // TODO: Navigate to MyWords/Expression view
-        print("Navigate to detail: \(schedule.title)")
+        selectedSchedule = schedule
     }
 }
 

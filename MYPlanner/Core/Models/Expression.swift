@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Expression: Identifiable, Equatable {
+struct Expression: Identifiable, Equatable, Hashable {
     let id: UUID
     var english: String
     var accent: String  // "pre-PARE for the PRO-duct MEET-ing"
