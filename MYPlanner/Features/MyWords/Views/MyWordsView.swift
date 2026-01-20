@@ -12,34 +12,76 @@ import SwiftData
 struct MyWordsView: View {
     let schedule: Schedule
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @StateObject private var ttsService = TTSService()
+    @State private var speakingExpressionId: UUID?
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppSizes.Spacing.large) {
-                    // Tags
-                    tagsRow
+            List {
+                // Header Section
+                Section {
+                    VStack(alignment: .leading, spacing: AppSizes.Spacing.large) {
+                        // Tags
+                        tagsRow
 
-                    // Title Card
-                    TitleCard(title: schedule.title)
+                        // Title Card
+                        TitleCard(title: schedule.title)
 
-                    // Section Header
-                    Text("유용한 영어 표현")
-                        .font(.system(size: AppSizes.FontSize.medium))
-                        .foregroundColor(AppColors.textPrimary)
-                        .padding(.top, AppSizes.Spacing.medium)
-
-                    // Expression Cards
-                    expressionList
+                        // Section Header
+                        Text("유용한 영어 표현")
+                            .font(.system(size: AppSizes.FontSize.medium))
+                            .foregroundColor(AppColors.textPrimary)
+                            .padding(.top, AppSizes.Spacing.medium)
+                    }
+                    .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                 }
-                .padding(.horizontal, AppSizes.Padding.horizontal)
-                .padding(.top, AppSizes.Spacing.large)
+
+                // Expression Cards
+                Section {
+                    ForEach(Array(schedule.expressions.enumerated()), id: \.element.id) { index, expression in
+                        ExpressionCard(
+                            index: index + 1,
+                            expression: expression,
+                            isListening: ttsService.isSpeaking && speakingExpressionId == expression.id,
+                            onListen: {
+                                handleListen(expression)
+                            },
+                            onSpeak: {
+                                // TODO: Step 11 - Speech recognition
+                                print("Speak: \(expression.english)")
+                            },
+                            onFavoriteToggle: {
+                                toggleFavorite(expression)
+                            }
+                        )
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                deleteExpression(expression)
+                            } label: {
+                                Label("삭제", systemImage: "trash")
+                            }
+                        }
+                    }
+                }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .background(AppColors.background)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     backButton
+                }
+            }
+            .onChange(of: ttsService.isSpeaking) { _, isSpeaking in
+                if !isSpeaking {
+                    speakingExpressionId = nil
                 }
             }
         }
@@ -72,27 +114,31 @@ struct MyWordsView: View {
             .foregroundColor(AppColors.accent)
             .padding(.horizontal, AppSizes.Padding.medium)
             .frame(height: AppSizes.Height.tag)
-            .background(Color(hex: "FFF2E0"))
+            .background(AppColors.accentLight)
             .cornerRadius(AppSizes.Radius.pill)
     }
 
-    // MARK: - Expression List
-    private var expressionList: some View {
-        VStack(spacing: AppSizes.Spacing.extraLarge) {
-            ForEach(Array(schedule.expressions.enumerated()), id: \.element.id) { index, expression in
-                ExpressionCard(
-                    index: index + 1,
-                    expression: expression,
-                    onListen: {
-                        // TODO: User handles TTS function
-                        print("Listen: \(expression.english)")
-                    },
-                    onSpeak: {
-                        // TODO: User handles speech recognition
-                        print("Speak: \(expression.english)")
-                    }
-                )
-            }
+    // MARK: - Delete Expression
+    private func deleteExpression(_ expression: Expression) {
+        if let index = schedule.expressions.firstIndex(where: { $0.id == expression.id }) {
+            schedule.expressions.remove(at: index)
+            modelContext.delete(expression)
+        }
+    }
+
+    // MARK: - Toggle Favorite
+    private func toggleFavorite(_ expression: Expression) {
+        expression.isFavorite.toggle()
+    }
+
+    // MARK: - TTS Actions
+    private func handleListen(_ expression: Expression) {
+        if ttsService.isSpeaking && speakingExpressionId == expression.id {
+            ttsService.stop()
+            speakingExpressionId = nil
+        } else {
+            speakingExpressionId = expression.id
+            ttsService.speak(expression.english)
         }
     }
 }

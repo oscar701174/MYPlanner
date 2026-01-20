@@ -15,6 +15,10 @@ struct ScheduleInputView: View {
     @State private var title: String = ""
     @State private var selectedCategory: Category = .other
     @State private var showCategoryPicker: Bool = false
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String?
+
+    private let aiService = AIService()
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSizes.Spacing.extraLarge) {
@@ -86,21 +90,38 @@ struct ScheduleInputView: View {
 
     // MARK: - Save Button
     private var saveButtonView: some View {
-        HStack {
-            Spacer()
+        VStack(spacing: AppSizes.Spacing.medium) {
+            HStack {
+                Spacer()
 
-            Button(action: saveSchedule) {
-                Text("저장")
-                    .font(.system(size: AppSizes.FontSize.body, weight: .bold))
-                    .foregroundColor(AppColors.accentText)
-                    .frame(width: AppSizes.Width.buttonSave, height: AppSizes.Height.buttonSave)
-                    .background(AppColors.accent)
-                    .cornerRadius(AppSizes.Radius.large)
+                Button(action: saveSchedule) {
+                    if isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .frame(width: AppSizes.Width.buttonSave, height: AppSizes.Height.buttonSave)
+                            .background(AppColors.accent)
+                            .cornerRadius(AppSizes.Radius.large)
+                    } else {
+                        Text("저장")
+                            .font(.system(size: AppSizes.FontSize.body, weight: .bold))
+                            .foregroundColor(AppColors.accentText)
+                            .frame(width: AppSizes.Width.buttonSave, height: AppSizes.Height.buttonSave)
+                            .background(AppColors.accent)
+                            .cornerRadius(AppSizes.Radius.large)
+                    }
+                }
+                .disabled(title.isEmpty || isLoading)
+                .opacity(title.isEmpty ? 0.6 : 1.0)
+
+                Spacer()
             }
-            .disabled(title.isEmpty)
-            .opacity(title.isEmpty ? 0.6 : 1.0)
 
-            Spacer()
+            // Error message
+            if let error = errorMessage {
+                Text(error)
+                    .font(.system(size: AppSizes.FontSize.small))
+                    .foregroundColor(.red)
+            }
         }
         .padding(.top, AppSizes.Spacing.medium)
     }
@@ -109,17 +130,99 @@ struct ScheduleInputView: View {
     private func saveSchedule() {
         guard !title.isEmpty else { return }
 
-        let schedule = Schedule(
-            title: title,
-            date: calendarViewModel.selectedDate,
-            category: selectedCategory
-        )
+        let scheduleTitle = title
+        let scheduleDate = calendarViewModel.selectedDate
+        let scheduleCategory = selectedCategory
 
-        modelContext.insert(schedule)
+        isLoading = true
+        errorMessage = nil
 
-        // Reset form
-        title = ""
-        selectedCategory = .other
+        Task {
+            do {
+                // Generate English expressions from AI
+                let aiResponse = try await aiService.generateExpression(for: scheduleTitle)
+
+                // Parse response into expressions
+                let expressions = parseExpressions(from: aiResponse)
+
+                await MainActor.run {
+                    // Create schedule with expressions
+                    let schedule = Schedule(
+                        title: scheduleTitle,
+                        date: scheduleDate,
+                        category: scheduleCategory
+                    )
+
+                    // Add expressions to schedule
+                    for expression in expressions {
+                        schedule.expressions.append(expression)
+                    }
+
+                    modelContext.insert(schedule)
+
+                    // Reset form
+                    title = ""
+                    selectedCategory = .other
+                    isLoading = false
+
+                    print("✅ [ScheduleInputView] Saved schedule with \(expressions.count) expressions")
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                    isLoading = false
+                    print("🔴 [ScheduleInputView] Error: \(error)")
+                }
+            }
+        }
+    }
+
+    // Parse AI response into Expression objects
+    private func parseExpressions(from response: String) -> [Expression] {
+        // Split by newlines and filter empty lines
+        let lines = response
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .compactMap { line -> String? in
+                var cleaned = line
+
+                // Remove numbering like "1.", "2.", etc.
+                if let range = cleaned.range(of: #"^\d+\.\s*"#, options: .regularExpression) {
+                    cleaned = String(cleaned[range.upperBound...])
+                }
+
+                // Remove markdown reference links like [(출처15)](url)
+                cleaned = cleaned.replacingOccurrences(
+                    of: #"\[\(출처\d+\)\]\([^)]+\)"#,
+                    with: "",
+                    options: .regularExpression
+                )
+
+                // Extract text inside quotes if present
+                if let quoteMatch = cleaned.range(of: #""([^"]+)""#, options: .regularExpression) {
+                    let quoted = cleaned[quoteMatch]
+                    // Remove the surrounding quotes
+                    cleaned = String(quoted.dropFirst().dropLast())
+                }
+
+                cleaned = cleaned.trimmingCharacters(in: .whitespaces)
+
+                // Skip lines that don't start with English letters (ASCII a-z, A-Z)
+                guard !cleaned.isEmpty,
+                      let firstChar = cleaned.first,
+                      firstChar.isASCII && (firstChar.isLetter || firstChar == "\"") else {
+                    return nil
+                }
+
+                return cleaned
+            }
+
+        print("🔵 [ScheduleInputView] Parsed \(lines.count) expressions")
+
+        return lines.map { line in
+            Expression(english: line, accent: line)
+        }
     }
 }
 

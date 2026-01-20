@@ -2,104 +2,111 @@
 //  MyWordsTabView.swift
 //  MYPlanner
 //
-//  My Words tab wrapper - displays schedules with expressions
-//  Uses SwiftData @Query for fetching schedules
+//  My Words tab - displays favorited expressions
+//  Uses SwiftData @Query for fetching expressions
 //
 
 import SwiftUI
 import SwiftData
 
 struct MyWordsTabView: View {
-    @Query(sort: \Schedule.createdAt, order: .reverse) private var allSchedules: [Schedule]
-    @State private var selectedSchedule: Schedule?
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \Expression.createdAt, order: .reverse) private var allExpressions: [Expression]
+    @StateObject private var ttsService = TTSService()
+    @State private var speakingExpressionId: UUID?
 
-    // Filter schedules that have expressions
-    private var schedulesWithExpressions: [Schedule] {
-        allSchedules.filter { !$0.expressions.isEmpty }
+    // Filter favorited expressions
+    private var favoritedExpressions: [Expression] {
+        allExpressions.filter { $0.isFavorite }
     }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: AppSizes.Spacing.extraLarge) {
-                if schedulesWithExpressions.isEmpty {
+                if favoritedExpressions.isEmpty {
                     emptyState
                 } else {
-                    scheduleList
+                    expressionList
                 }
             }
             .padding(.horizontal, AppSizes.Padding.horizontal)
             .navigationTitle("My Words")
             .navigationBarTitleDisplayMode(.large)
-            .navigationDestination(item: $selectedSchedule) { schedule in
-                MyWordsView(schedule: schedule)
-                    .navigationBarBackButtonHidden(true)
+            .onChange(of: ttsService.isSpeaking) { _, isSpeaking in
+                if !isSpeaking {
+                    speakingExpressionId = nil
+                }
             }
         }
     }
 
-    // MARK: - Schedule List
-    private var scheduleList: some View {
-        ScrollView {
-            LazyVStack(spacing: AppSizes.Spacing.large) {
-                ForEach(schedulesWithExpressions) { schedule in
-                    ScheduleExpressionCard(schedule: schedule) {
-                        selectedSchedule = schedule
+    // MARK: - Expression List
+    private var expressionList: some View {
+        List {
+            ForEach(Array(favoritedExpressions.enumerated()), id: \.element.id) { index, expression in
+                ExpressionCard(
+                    index: index + 1,
+                    expression: expression,
+                    isListening: ttsService.isSpeaking && speakingExpressionId == expression.id,
+                    onListen: {
+                        handleListen(expression)
+                    },
+                    onSpeak: {
+                        // TODO: Step 11 - Speech recognition
+                        print("Speak: \(expression.english)")
+                    },
+                    onFavoriteToggle: {
+                        toggleFavorite(expression)
+                    }
+                )
+                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
+                        deleteExpression(expression)
+                    } label: {
+                        Label("삭제", systemImage: "trash")
                     }
                 }
             }
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
     }
 
     // MARK: - Empty State
     private var emptyState: some View {
         VStack(spacing: AppSizes.Spacing.large) {
-            Text("📖")
+            Text("⭐")
                 .font(.system(size: 48))
-            Text("아직 학습할 표현이 없습니다")
+            Text("즐겨찾기한 표현이 없습니다")
                 .font(.system(size: AppSizes.FontSize.medium))
                 .foregroundColor(AppColors.textSecondary)
-            Text("일정을 추가하고 영어 표현을 생성해보세요")
+            Text("Today 탭에서 표현의 ☆를 눌러 즐겨찾기하세요")
                 .font(.system(size: AppSizes.FontSize.body))
                 .foregroundColor(AppColors.textTertiary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-}
 
-// MARK: - Schedule Expression Card
-
-private struct ScheduleExpressionCard: View {
-    let schedule: Schedule
-    var onTap: (() -> Void)?
-
-    var body: some View {
-        Button(action: { onTap?() }) {
-            HStack {
-                VStack(alignment: .leading, spacing: AppSizes.Spacing.small) {
-                    Text(schedule.title)
-                        .font(.system(size: AppSizes.FontSize.medium, weight: .medium))
-                        .foregroundColor(AppColors.textPrimary)
-
-                    Text("\(schedule.expressions.count)개 표현")
-                        .font(.system(size: AppSizes.FontSize.body))
-                        .foregroundColor(AppColors.textSecondary)
-                }
-
-                Spacer()
-
-                Text("▶")
-                    .font(.system(size: AppSizes.FontSize.body))
-                    .foregroundColor(AppColors.accentText)
-                    .frame(width: AppSizes.Width.buttonSmall, height: AppSizes.Height.button)
-                    .background(AppColors.accent)
-                    .cornerRadius(AppSizes.Radius.medium)
-            }
-            .padding(.horizontal, AppSizes.Padding.horizontal)
-            .frame(height: AppSizes.Height.card)
-            .background(AppColors.surface)
-            .cornerRadius(AppSizes.Radius.large)
+    // MARK: - Actions
+    private func handleListen(_ expression: Expression) {
+        if ttsService.isSpeaking && speakingExpressionId == expression.id {
+            ttsService.stop()
+            speakingExpressionId = nil
+        } else {
+            speakingExpressionId = expression.id
+            ttsService.speak(expression.english)
         }
-        .buttonStyle(.plain)
+    }
+
+    private func toggleFavorite(_ expression: Expression) {
+        expression.isFavorite.toggle()
+    }
+
+    private func deleteExpression(_ expression: Expression) {
+        modelContext.delete(expression)
     }
 }
 

@@ -14,6 +14,7 @@ final class Expression {
     var english: String
     var accent: String  // "pre-PARE for the PRO-duct MEET-ing"
     var isPracticed: Bool
+    var isFavorite: Bool
     var createdAt: Date
 
     init(
@@ -21,12 +22,14 @@ final class Expression {
         english: String,
         accent: String = "",
         isPracticed: Bool = false,
+        isFavorite: Bool = false,
         createdAt: Date = Date()
     ) {
         self.id = id
         self.english = english
         self.accent = accent.isEmpty ? english : accent
         self.isPracticed = isPracticed
+        self.isFavorite = isFavorite
         self.createdAt = createdAt
     }
 }

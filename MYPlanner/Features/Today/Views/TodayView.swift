@@ -83,22 +83,25 @@ struct TodayView: View {
 
     // MARK: - Schedule List
     private var scheduleListView: some View {
-        ScrollView {
-            LazyVStack(spacing: AppSizes.Spacing.large) {
-                ForEach(schedules) { schedule in
-                    ScheduleCard(schedule: schedule) {
-                        navigateToDetail(schedule)
-                    }
-                    .contextMenu {
-                        Button(role: .destructive) {
-                            deleteSchedule(schedule)
-                        } label: {
-                            Label("삭제", systemImage: "trash")
-                        }
+        List {
+            ForEach(schedules) { schedule in
+                ScheduleCard(schedule: schedule) {
+                    navigateToDetail(schedule)
+                }
+                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
+                        deleteSchedule(schedule)
+                    } label: {
+                        Label("삭제", systemImage: "trash")
                     }
                 }
             }
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
     }
 
     // MARK: - Actions

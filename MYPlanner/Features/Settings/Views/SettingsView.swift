@@ -34,7 +34,7 @@ struct SettingsView: View {
             .alert("API Key Saved", isPresented: $showingSaveAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("Your Claude API key has been saved securely.")
+                Text("Your API key has been saved securely.")
             }
             .onAppear {
                 apiKey = keychain.retrieveAPIKey() ?? ""
@@ -54,7 +54,7 @@ struct SettingsView: View {
     private var apiSection: some View {
         Section {
             VStack(alignment: .leading, spacing: AppSizes.Spacing.medium) {
-                Text("Claude API Key")
+                Text("AIService API Key")
                     .font(.system(size: AppSizes.FontSize.body))
                     .foregroundColor(AppColors.textSecondary)
 

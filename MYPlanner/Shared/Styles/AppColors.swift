@@ -4,6 +4,7 @@
 //
 //  Design System - Color Palette
 //  Monochrome minimal with orange accent
+//  Supports Light and Dark mode
 //
 
 import SwiftUI
@@ -11,35 +12,59 @@ import SwiftUI
 enum AppColors {
     // MARK: - Base Colors (검정/회색 계열)
 
-    /// 전체 배경 - #FFFFFF
-    static let background = Color.white
+    /// 전체 배경 - Light: #FFFFFF, Dark: #000000
+    static let background = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor.black : UIColor.white
+    })
 
-    /// 카드 배경, 입력 필드 - #F5F5F5
-    static let surface = Color(hex: "F5F5F5")
+    /// 카드 배경, 입력 필드 - Light: #F5F5F5, Dark: #1C1C1E
+    static let surface = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 28/255, green: 28/255, blue: 30/255, alpha: 1)
+            : UIColor(red: 245/255, green: 245/255, blue: 245/255, alpha: 1)
+    })
 
-    /// 구분선, 테두리 - #E0E0E0
-    static let border = Color(hex: "E0E0E0")
+    /// 구분선, 테두리 - Light: #E0E0E0, Dark: #38383A
+    static let border = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 56/255, green: 56/255, blue: 58/255, alpha: 1)
+            : UIColor(red: 224/255, green: 224/255, blue: 224/255, alpha: 1)
+    })
 
     // MARK: - Text Colors
 
-    /// 제목, 본문 - #000000
-    static let textPrimary = Color.black
+    /// 제목, 본문 - Light: #000000, Dark: #FFFFFF
+    static let textPrimary = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor.white : UIColor.black
+    })
 
-    /// 보조 텍스트, 레이블 - #666666
-    static let textSecondary = Color(hex: "666666")
+    /// 보조 텍스트, 레이블 - Light: #666666, Dark: #A0A0A0
+    static let textSecondary = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 160/255, green: 160/255, blue: 160/255, alpha: 1)
+            : UIColor(red: 102/255, green: 102/255, blue: 102/255, alpha: 1)
+    })
 
-    /// 플레이스홀더, 비활성 - #999999
-    static let textTertiary = Color(hex: "999999")
+    /// 플레이스홀더, 비활성 - Light: #999999, Dark: #6C6C6C
+    static let textTertiary = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 108/255, green: 108/255, blue: 108/255, alpha: 1)
+            : UIColor(red: 153/255, green: 153/255, blue: 153/255, alpha: 1)
+    })
 
     // MARK: - Accent Colors (오렌지 계열 - 제한적 사용)
 
-    /// CTA 버튼 배경, 선택된 날짜 - #FF8C00
+    /// CTA 버튼 배경, 선택된 날짜 - #FF8C00 (same for both modes)
     static let accent = Color(hex: "FF8C00")
 
-    /// 태그 배경, 하이라이트 - #FFF3E0
-    static let accentLight = Color(hex: "FFF3E0")
+    /// 태그 배경, 하이라이트 - Light: #FFF3E0, Dark: #3D2E1A
+    static let accentLight = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 61/255, green: 46/255, blue: 26/255, alpha: 1)
+            : UIColor(red: 255/255, green: 243/255, blue: 224/255, alpha: 1)
+    })
 
-    /// 버튼 텍스트 (오렌지 배경 위)
+    /// 버튼 텍스트 (오렌지 배경 위) - always white
     static let accentText = Color.white
 }
 

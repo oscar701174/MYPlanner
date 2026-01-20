@@ -14,19 +14,33 @@ import SwiftData
 struct ExpressionCard: View {
     let index: Int
     let expression: Expression
+    var isListening: Bool = false
     var onListen: (() -> Void)?
     var onSpeak: (() -> Void)?
+    var onFavoriteToggle: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSizes.Spacing.large) {
-            // Expression text
-            Text("\(index). \(expression.english)")
-                .font(.system(size: AppSizes.FontSize.medium))
-                .foregroundColor(AppColors.textPrimary)
+            // Header: Expression text + Favorite button
+            HStack(alignment: .top) {
+                Text("\(index). \(expression.english)")
+                    .font(.system(size: AppSizes.FontSize.medium))
+                    .foregroundColor(AppColors.textPrimary)
+
+                Spacer()
+
+                // Favorite button
+                Button(action: { onFavoriteToggle?() }) {
+                    Image(systemName: expression.isFavorite ? "star.fill" : "star")
+                        .font(.system(size: AppSizes.FontSize.large))
+                        .foregroundColor(expression.isFavorite ? AppColors.accent : AppColors.textTertiary)
+                }
+                .buttonStyle(.plain)
+            }
 
             // Accent row: Listen button + accent text
             HStack(spacing: AppSizes.Spacing.medium) {
-                ActionButton(type: .listen) {
+                ActionButton(type: .listen, isActive: isListening) {
                     onListen?()
                 }
 

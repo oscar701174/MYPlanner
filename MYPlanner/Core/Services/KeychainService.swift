@@ -95,11 +95,13 @@ extension KeychainService {
 
     @discardableResult
     func saveAPIKey(_ apiKey: String) -> Bool {
-        set(apiKey, forKey: Self.apiKeyIdentifier)
+        let trimmedKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        return set(trimmedKey, forKey: Self.apiKeyIdentifier)
     }
 
     func retrieveAPIKey() -> String? {
-        getString(forKey: Self.apiKeyIdentifier)
+        guard let key = getString(forKey: Self.apiKeyIdentifier) else { return nil }
+        return key.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     @discardableResult
