@@ -40,11 +40,6 @@
 			path = MYPlannerTests;
 			sourceTree = "<group>";
 		};
-		5596981B2F0E81BB0050A8D1 /* MYPlannerUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = MYPlannerUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,7 +72,6 @@
 			children = (
 				559698012F0E81B90050A8D1 /* MYPlanner */,
 				559698112F0E81BB0050A8D1 /* MYPlannerTests */,
-				5596981B2F0E81BB0050A8D1 /* MYPlannerUITests */,
 				559698002F0E81B90050A8D1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -152,9 +146,6 @@
 			);
 			dependencies = (
 				5596981A2F0E81BB0050A8D1 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				5596981B2F0E81BB0050A8D1 /* MYPlannerUITests */,
 			);
 			name = MYPlannerUITests;
 			packageProductDependencies = (

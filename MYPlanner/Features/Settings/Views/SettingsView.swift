@@ -9,7 +9,10 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("claudeAPIKey") private var apiKey: String = ""
+    // MARK: - Properties
+
+    private let keychain = KeychainService()
+    @State private var apiKey: String = ""
     @State private var isAPIKeyVisible: Bool = false
     @State private var showingSaveAlert: Bool = false
 
@@ -31,7 +34,17 @@ struct SettingsView: View {
             .alert("API Key Saved", isPresented: $showingSaveAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("Your Claude API key has been saved.")
+                Text("Your Claude API key has been saved securely.")
+            }
+            .onAppear {
+                apiKey = keychain.retrieveAPIKey() ?? ""
+            }
+            .onChange(of: apiKey) { _, newValue in
+                if newValue.isEmpty {
+                    keychain.deleteAPIKey()
+                } else {
+                    keychain.saveAPIKey(newValue)
+                }
             }
         }
     }
@@ -101,7 +114,7 @@ struct SettingsView: View {
         } header: {
             Text("API Configuration")
         } footer: {
-            Text("Your API key is stored locally on this device. It is used to generate English expressions from your schedules.")
+            Text("Your API key is stored securely in the iOS Keychain. It is used to generate English expressions from your schedules.")
                 .font(.system(size: AppSizes.FontSize.small))
                 .foregroundColor(AppColors.textTertiary)
         }
@@ -219,6 +232,6 @@ private struct SettingsRow: View {
 #Preview("With API Key") {
     SettingsView()
         .onAppear {
-            UserDefaults.standard.set("sk-ant-api03-xxxx", forKey: "claudeAPIKey")
+            KeychainService().saveAPIKey("sk-ant-api03-xxxx-preview")
         }
 }
