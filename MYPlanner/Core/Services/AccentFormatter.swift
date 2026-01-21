@@ -3,7 +3,11 @@
 //  MYPlanner
 //
 //  Accent formatting service
-//  Converts English text to accent notation (e.g., "prepare" → "pre-PARE")
+//  Converts English text to accent notation with CONNECTED SPEECH
+//
+//  Key feature: NO SPACES between words (like native speakers hear)
+//  Example: "I am a boy" → "IamaBOY"
+//  Example: "I have a meeting" → "IhavəəMEET-ing"
 //
 
 import Foundation
@@ -77,9 +81,10 @@ class AccentFormatter {
 
     // MARK: - Public Methods
 
-    /// Format entire sentence with accent notation
+    /// Format entire sentence with accent notation (CONNECTED SPEECH - no spaces)
     /// - Parameter sentence: Input sentence
-    /// - Returns: Sentence with accent marks (e.g., "I would like to buy a TI-cket.")
+    /// - Returns: Sentence with accent marks, words connected without spaces
+    ///   Example: "I have a meeting" → "IhavəMEET-ing"
     func format(_ sentence: String) -> String {
         let words: [String] = sentence.components(separatedBy: " ")
         var result: [String] = []
@@ -89,7 +94,8 @@ class AccentFormatter {
             result.append(formatted)
         }
 
-        return result.joined(separator: " ")
+        // Join WITHOUT spaces (connected speech)
+        return result.joined(separator: "")
     }
 
     /// Format single word with accent notation
@@ -150,13 +156,9 @@ class AccentFormatter {
             }
         }
 
-        // Join with hyphen (only for multi-syllable words)
-        let formatted: String
-        if formattedSyllables.count > 1 {
-            formatted = formattedSyllables.joined(separator: "-")
-        } else {
-            formatted = formattedSyllables.joined()
-        }
+        // Join WITHOUT hyphen (connected speech - syllables flow together)
+        // Stress is indicated by UPPERCASE/«markers»/lowercase, not by hyphens
+        let formatted: String = formattedSyllables.joined(separator: "")
 
         // Cache result
         cache[cacheKey] = formatted

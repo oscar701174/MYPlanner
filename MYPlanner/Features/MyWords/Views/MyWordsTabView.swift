@@ -12,7 +12,7 @@ import SwiftData
 struct MyWordsTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Expression.createdAt, order: .reverse) private var allExpressions: [Expression]
-    @StateObject private var ttsService = TTSService()
+    @State private var ttsService = TTSService()
     @State private var speakingExpressionId: UUID?
 
     // Filter favorited expressions
@@ -48,6 +48,7 @@ struct MyWordsTabView: View {
                     index: index + 1,
                     expression: expression,
                     isListening: ttsService.isSpeaking && speakingExpressionId == expression.id,
+                    currentSpeakingWord: speakingExpressionId == expression.id ? ttsService.currentWord : nil,
                     onListen: {
                         handleListen(expression)
                     },

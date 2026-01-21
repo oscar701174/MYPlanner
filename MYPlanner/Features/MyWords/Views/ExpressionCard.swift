@@ -6,6 +6,7 @@
 //  - White background with border
 //  - English expression with accent visualization
 //  - Listen and speak action buttons
+//  - Word-by-word highlighting during TTS playback
 //
 
 import SwiftUI
@@ -15,6 +16,10 @@ struct ExpressionCard: View {
     let index: Int
     let expression: Expression
     var isListening: Bool = false
+
+    /// Current word being spoken (for highlighting)
+    var currentSpeakingWord: String? = nil
+
     var onListen: (() -> Void)?
     var onSpeak: (() -> Void)?
     var onFavoriteToggle: (() -> Void)?
@@ -38,13 +43,17 @@ struct ExpressionCard: View {
                 .buttonStyle(.plain)
             }
 
-            // Accent row: Listen button + accent text
+            // Accent row: Listen button + accent text with highlighting
             HStack(spacing: AppSizes.Spacing.medium) {
                 ActionButton(type: .listen, isActive: isListening) {
                     onListen?()
                 }
 
-                AccentLabel(accent: expression.accent)
+                AccentLabel(
+                    accent: expression.accent,
+                    originalText: expression.english,
+                    highlightedWord: isListening ? currentSpeakingWord : nil
+                )
             }
 
             // Speak button
@@ -61,12 +70,13 @@ struct ExpressionCard: View {
             RoundedRectangle(cornerRadius: AppSizes.Radius.large)
                 .stroke(AppColors.border, lineWidth: AppSizes.Border.width)
         )
+        .animation(.easeInOut(duration: 0.15), value: currentSpeakingWord)
     }
 }
 
 // MARK: - Preview
 
-#Preview {
+#Preview("Normal") {
     VStack(spacing: 16) {
         ExpressionCard(
             index: 1,
@@ -76,6 +86,20 @@ struct ExpressionCard: View {
         } onSpeak: {
             print("Speak tapped")
         }
+    }
+    .padding()
+    .modelContainer(PreviewData.container)
+}
+
+#Preview("With Highlight") {
+    VStack(spacing: 16) {
+        // Simulating TTS highlighting "meeting"
+        ExpressionCard(
+            index: 1,
+            expression: PreviewData.singleExpression,
+            isListening: true,
+            currentSpeakingWord: "meeting"
+        )
     }
     .padding()
     .modelContainer(PreviewData.container)

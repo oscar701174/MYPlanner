@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftData
+import AVFoundation
 
 struct SettingsView: View {
     // MARK: - Properties
@@ -16,10 +17,12 @@ struct SettingsView: View {
     @Query private var allExpressions: [Expression]
 
     private let keychain = KeychainService()
+    @State private var ttsService = TTSService()
     @State private var apiKey: String = ""
     @State private var isAPIKeyVisible: Bool = false
     @State private var showingSaveAlert: Bool = false
     @State private var showingRegenerateAlert: Bool = false
+    @State private var showingVoiceInstructions: Bool = false
     @State private var regeneratedCount: Int = 0
     @State private var isRegenerating: Bool = false
 
@@ -28,6 +31,9 @@ struct SettingsView: View {
             List {
                 // API Configuration Section
                 apiSection
+
+                // Voice Settings Section
+                voiceSection
 
                 // Data Management Section
                 dataManagementSection
@@ -50,6 +56,16 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text("Updated \(regeneratedCount) expressions with CMU Dictionary accents.")
+            }
+            .alert("Download Premium Voices", isPresented: $showingVoiceInstructions) {
+                Button("Open Settings", role: .none) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("To download premium voices:\n\n1. Open Settings app\n2. Accessibility\n3. Spoken Content\n4. Voices\n5. English\n6. Tap a voice to download")
             }
             .onAppear {
                 apiKey = keychain.retrieveAPIKey() ?? ""
@@ -133,6 +149,133 @@ struct SettingsView: View {
                 .font(.system(size: AppSizes.FontSize.small))
                 .foregroundColor(AppColors.textTertiary)
         }
+    }
+
+    // MARK: - Voice Section
+
+    private var voiceSection: some View {
+        Section {
+            // Current Voice
+            HStack {
+                Image(systemName: "speaker.wave.2.fill")
+                    .frame(width: 24)
+                    .foregroundColor(AppColors.accent)
+
+                Text("Current Voice")
+                    .font(.system(size: AppSizes.FontSize.medium))
+                    .foregroundColor(AppColors.textPrimary)
+
+                Spacer()
+
+                Text(ttsService.currentVoiceName)
+                    .font(.system(size: AppSizes.FontSize.body))
+                    .foregroundColor(AppColors.textSecondary)
+            }
+
+            // Voice Quality
+            HStack {
+                Image(systemName: "star.fill")
+                    .frame(width: 24)
+                    .foregroundColor(AppColors.accent)
+
+                Text("Voice Quality")
+                    .font(.system(size: AppSizes.FontSize.medium))
+                    .foregroundColor(AppColors.textPrimary)
+
+                Spacer()
+
+                Text(voiceQualityLabel)
+                    .font(.system(size: AppSizes.FontSize.body))
+                    .foregroundColor(voiceQualityColor)
+            }
+
+            // Download Premium Voices Button
+            Button(action: { showingVoiceInstructions = true }) {
+                HStack {
+                    Image(systemName: "arrow.down.circle")
+                        .frame(width: 24)
+                        .foregroundColor(AppColors.accent)
+
+                    Text("Download Premium Voices")
+                        .font(.system(size: AppSizes.FontSize.medium))
+                        .foregroundColor(AppColors.textPrimary)
+
+                    Spacer()
+
+                    Image(systemName: "info.circle")
+                        .font(.system(size: AppSizes.FontSize.body))
+                        .foregroundColor(AppColors.textTertiary)
+                }
+            }
+
+            // Test Voice Button
+            Button(action: testVoice) {
+                HStack {
+                    Image(systemName: "play.circle")
+                        .frame(width: 24)
+                        .foregroundColor(AppColors.accent)
+
+                    Text("Test Voice")
+                        .font(.system(size: AppSizes.FontSize.medium))
+                        .foregroundColor(AppColors.textPrimary)
+
+                    Spacer()
+
+                    if ttsService.isSpeaking {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    }
+                }
+            }
+
+            // Debug: Show available voices (prints to console)
+            Button(action: { TTSService.printAllVoices() }) {
+                HStack {
+                    Image(systemName: "list.bullet")
+                        .frame(width: 24)
+                        .foregroundColor(AppColors.accent)
+
+                    Text("Print Available Voices (Debug)")
+                        .font(.system(size: AppSizes.FontSize.medium))
+                        .foregroundColor(AppColors.textPrimary)
+
+                    Spacer()
+                }
+            }
+        } header: {
+            Text("Voice Settings")
+        } footer: {
+            Text("For better voice quality, download Premium or Enhanced voices from iOS Settings. Premium voices sound more natural like Siri.")
+                .font(.system(size: AppSizes.FontSize.small))
+                .foregroundColor(AppColors.textTertiary)
+        }
+    }
+
+    // Voice quality label based on current voice
+    private var voiceQualityLabel: String {
+        let voices = AVSpeechSynthesisVoice.speechVoices()
+        if let voice = voices.first(where: { $0.name == ttsService.currentVoiceName }) {
+            switch voice.quality {
+            case .premium: return "Premium"
+            case .enhanced: return "Enhanced"
+            default: return "Default"
+            }
+        }
+        return "Default"
+    }
+
+    // Voice quality color
+    private var voiceQualityColor: Color {
+        switch voiceQualityLabel {
+        case "Premium": return .green
+        case "Enhanced": return .blue
+        default: return AppColors.textSecondary
+        }
+    }
+
+    // Test current voice
+    private func testVoice() {
+        ttsService.speak("Hello! This is a test of the current voice setting.")
     }
 
     // MARK: - Data Management Section

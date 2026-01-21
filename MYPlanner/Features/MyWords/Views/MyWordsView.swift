@@ -13,7 +13,7 @@ struct MyWordsView: View {
     let schedule: Schedule
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var ttsService = TTSService()
+    @State private var ttsService = TTSService()
     @State private var speakingExpressionId: UUID?
 
     var body: some View {
@@ -46,6 +46,7 @@ struct MyWordsView: View {
                             index: index + 1,
                             expression: expression,
                             isListening: ttsService.isSpeaking && speakingExpressionId == expression.id,
+                            currentSpeakingWord: speakingExpressionId == expression.id ? ttsService.currentWord : nil,
                             onListen: {
                                 handleListen(expression)
                             },

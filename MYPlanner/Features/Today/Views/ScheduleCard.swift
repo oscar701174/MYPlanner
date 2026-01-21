@@ -24,14 +24,26 @@ struct ScheduleCard: View {
 
             Spacer()
 
-            // Arrow button
-            Button(action: { onTap?() }) {
-                Text("▶")
-                    .font(.system(size: AppSizes.FontSize.body))
-                    .foregroundColor(AppColors.accentText)
-                    .frame(width: AppSizes.Width.buttonSmall, height: AppSizes.Height.button)
-                    .background(AppColors.accent)
-                    .cornerRadius(AppSizes.Radius.medium)
+            // Generating indicator or arrow button
+            if schedule.isGenerating {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                    Text("생성중")
+                        .font(.system(size: AppSizes.FontSize.small))
+                        .foregroundColor(AppColors.textSecondary)
+                }
+                .frame(width: 70, height: AppSizes.Height.button)
+            } else {
+                // Arrow button
+                Button(action: { onTap?() }) {
+                    Text("▶")
+                        .font(.system(size: AppSizes.FontSize.body))
+                        .foregroundColor(AppColors.accentText)
+                        .frame(width: AppSizes.Width.buttonSmall, height: AppSizes.Height.button)
+                        .background(AppColors.accent)
+                        .cornerRadius(AppSizes.Radius.medium)
+                }
             }
         }
         .padding(.horizontal, AppSizes.Padding.horizontal)

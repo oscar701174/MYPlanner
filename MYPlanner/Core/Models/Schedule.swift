@@ -15,6 +15,7 @@ final class Schedule {
     var date: Date
     var categoryRaw: String
     var createdAt: Date
+    var isGenerating: Bool = false  // AI expression generation in progress
 
     // One-to-many relationship with cascade delete
     @Relationship(deleteRule: .cascade)
@@ -32,6 +33,7 @@ final class Schedule {
         date: Date = Date(),
         category: Category = .other,
         expressions: [Expression] = [],
+        isGenerating: Bool = false,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -39,6 +41,7 @@ final class Schedule {
         self.date = date
         self.categoryRaw = category.rawValue
         self.expressions = expressions
+        self.isGenerating = isGenerating
         self.createdAt = createdAt
     }
 }

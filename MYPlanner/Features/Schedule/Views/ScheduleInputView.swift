@@ -15,7 +15,6 @@ struct ScheduleInputView: View {
     @State private var title: String = ""
     @State private var selectedCategory: Category = .other
     @State private var showCategoryPicker: Bool = false
-    @State private var isLoading: Bool = false
     @State private var errorMessage: String?
 
     private let aiService = AIService()
@@ -95,22 +94,14 @@ struct ScheduleInputView: View {
                 Spacer()
 
                 Button(action: saveSchedule) {
-                    if isLoading {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .frame(width: AppSizes.Width.buttonSave, height: AppSizes.Height.buttonSave)
-                            .background(AppColors.accent)
-                            .cornerRadius(AppSizes.Radius.large)
-                    } else {
-                        Text("저장")
-                            .font(.system(size: AppSizes.FontSize.body, weight: .bold))
-                            .foregroundColor(AppColors.accentText)
-                            .frame(width: AppSizes.Width.buttonSave, height: AppSizes.Height.buttonSave)
-                            .background(AppColors.accent)
-                            .cornerRadius(AppSizes.Radius.large)
-                    }
+                    Text("저장")
+                        .font(.system(size: AppSizes.FontSize.body, weight: .bold))
+                        .foregroundColor(AppColors.accentText)
+                        .frame(width: AppSizes.Width.buttonSave, height: AppSizes.Height.buttonSave)
+                        .background(AppColors.accent)
+                        .cornerRadius(AppSizes.Radius.large)
                 }
-                .disabled(title.isEmpty || isLoading)
+                .disabled(title.isEmpty)
                 .opacity(title.isEmpty ? 0.6 : 1.0)
 
                 Spacer()
@@ -134,45 +125,41 @@ struct ScheduleInputView: View {
         let scheduleDate = calendarViewModel.selectedDate
         let scheduleCategory = selectedCategory
 
-        isLoading = true
+        // 1. Save schedule immediately with isGenerating = true
+        let schedule = Schedule(
+            title: scheduleTitle,
+            date: scheduleDate,
+            category: scheduleCategory,
+            isGenerating: true
+        )
+        modelContext.insert(schedule)
+
+        // 2. Reset form immediately (instant UX)
+        title = ""
+        selectedCategory = .other
         errorMessage = nil
 
+        print("✅ [ScheduleInputView] Schedule saved, starting background AI generation...")
+
+        // 3. Generate expressions in background (stays on MainActor for SwiftData safety)
         Task {
             do {
-                // Generate English expressions from AI
+                // Generate English expressions from AI (async network call)
                 let aiResponse = try await aiService.generateExpression(for: scheduleTitle)
 
                 // Parse response into expressions
                 let expressions = parseExpressions(from: aiResponse)
 
-                await MainActor.run {
-                    // Create schedule with expressions
-                    let schedule = Schedule(
-                        title: scheduleTitle,
-                        date: scheduleDate,
-                        category: scheduleCategory
-                    )
-
-                    // Add expressions to schedule
-                    for expression in expressions {
-                        schedule.expressions.append(expression)
-                    }
-
-                    modelContext.insert(schedule)
-
-                    // Reset form
-                    title = ""
-                    selectedCategory = .other
-                    isLoading = false
-
-                    print("✅ [ScheduleInputView] Saved schedule with \(expressions.count) expressions")
+                // Add expressions to schedule (already on MainActor)
+                for expression in expressions {
+                    schedule.expressions.append(expression)
                 }
+                schedule.isGenerating = false
+
+                print("✅ [ScheduleInputView] Background: Added \(expressions.count) expressions")
             } catch {
-                await MainActor.run {
-                    errorMessage = error.localizedDescription
-                    isLoading = false
-                    print("🔴 [ScheduleInputView] Error: \(error)")
-                }
+                schedule.isGenerating = false
+                print("🔴 [ScheduleInputView] Background error: \(error)")
             }
         }
     }
