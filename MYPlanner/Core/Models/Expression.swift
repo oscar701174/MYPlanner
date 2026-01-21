@@ -20,14 +20,15 @@ final class Expression {
     init(
         id: UUID = UUID(),
         english: String,
-        accent: String = "",
+        accent: String? = nil,
         isPracticed: Bool = false,
         isFavorite: Bool = false,
         createdAt: Date = Date()
     ) {
         self.id = id
         self.english = english
-        self.accent = accent.isEmpty ? english : accent
+        // Auto-generate accent using CMU Dictionary if not provided
+        self.accent = accent ?? AccentFormatter.shared.format(english)
         self.isPracticed = isPracticed
         self.isFavorite = isFavorite
         self.createdAt = createdAt

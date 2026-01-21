@@ -24,7 +24,7 @@ class TTSService: NSObject, ObservableObject {
 
     // MARK: - Private Properties
 
-    private let synthesizer = AVSpeechSynthesizer()
+    private let synthesizer: AVSpeechSynthesizer = AVSpeechSynthesizer()
     private var currentText: String = ""
 
     // MARK: - Initialization
@@ -44,7 +44,7 @@ class TTSService: NSObject, ObservableObject {
         stop()
 
         currentText = text
-        let utterance = AVSpeechUtterance(string: text)
+        let utterance: AVSpeechUtterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: language)
         utterance.rate = rate
         utterance.pitchMultiplier = pitch
@@ -99,7 +99,7 @@ extension TTSService: AVSpeechSynthesizerDelegate {
                           willSpeakRangeOfSpeechString characterRange: NSRange,
                           utterance: AVSpeechUtterance) {
         DispatchQueue.main.async {
-            let text = utterance.speechString as NSString
+            let text: NSString = utterance.speechString as NSString
             self.currentWord = text.substring(with: characterRange)
         }
     }

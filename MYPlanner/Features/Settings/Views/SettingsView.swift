@@ -7,20 +7,30 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     // MARK: - Properties
+
+    @Environment(\.modelContext) private var modelContext
+    @Query private var allExpressions: [Expression]
 
     private let keychain = KeychainService()
     @State private var apiKey: String = ""
     @State private var isAPIKeyVisible: Bool = false
     @State private var showingSaveAlert: Bool = false
+    @State private var showingRegenerateAlert: Bool = false
+    @State private var regeneratedCount: Int = 0
+    @State private var isRegenerating: Bool = false
 
     var body: some View {
         NavigationStack {
             List {
                 // API Configuration Section
                 apiSection
+
+                // Data Management Section
+                dataManagementSection
 
                 // App Info Section
                 appInfoSection
@@ -35,6 +45,11 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text("Your API key has been saved securely.")
+            }
+            .alert("Accents Regenerated", isPresented: $showingRegenerateAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Updated \(regeneratedCount) expressions with CMU Dictionary accents.")
             }
             .onAppear {
                 apiKey = keychain.retrieveAPIKey() ?? ""
@@ -117,6 +132,107 @@ struct SettingsView: View {
             Text("Your API key is stored securely in the iOS Keychain. It is used to generate English expressions from your schedules.")
                 .font(.system(size: AppSizes.FontSize.small))
                 .foregroundColor(AppColors.textTertiary)
+        }
+    }
+
+    // MARK: - Data Management Section
+
+    private var dataManagementSection: some View {
+        Section {
+            // CMU Dictionary Status
+            HStack {
+                Image(systemName: "book.closed")
+                    .frame(width: 24)
+                    .foregroundColor(AppColors.accent)
+
+                Text("CMU Dictionary")
+                    .font(.system(size: AppSizes.FontSize.medium))
+                    .foregroundColor(AppColors.textPrimary)
+
+                Spacer()
+
+                Text("\(CMUDictionaryService.shared.wordCount) words")
+                    .font(.system(size: AppSizes.FontSize.body))
+                    .foregroundColor(AppColors.textSecondary)
+            }
+
+            // Expression Count
+            HStack {
+                Image(systemName: "text.quote")
+                    .frame(width: 24)
+                    .foregroundColor(AppColors.accent)
+
+                Text("Expressions")
+                    .font(.system(size: AppSizes.FontSize.medium))
+                    .foregroundColor(AppColors.textPrimary)
+
+                Spacer()
+
+                Text("\(allExpressions.count)")
+                    .font(.system(size: AppSizes.FontSize.body))
+                    .foregroundColor(AppColors.textSecondary)
+            }
+
+            // Regenerate Accents Button
+            Button(action: regenerateAccents) {
+                HStack {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .frame(width: 24)
+                        .foregroundColor(AppColors.accent)
+
+                    Text("Regenerate Accents")
+                        .font(.system(size: AppSizes.FontSize.medium))
+                        .foregroundColor(AppColors.textPrimary)
+
+                    Spacer()
+
+                    if isRegenerating {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: AppSizes.FontSize.body))
+                            .foregroundColor(AppColors.textTertiary)
+                    }
+                }
+            }
+            .disabled(isRegenerating || allExpressions.isEmpty)
+        } header: {
+            Text("Data Management")
+        } footer: {
+            Text("Regenerate accents will update all existing expressions using CMU Dictionary for proper stress marking.")
+                .font(.system(size: AppSizes.FontSize.small))
+                .foregroundColor(AppColors.textTertiary)
+        }
+    }
+
+    // MARK: - Regenerate Accents
+
+    private func regenerateAccents() {
+        isRegenerating = true
+        regeneratedCount = 0
+
+        // Process in background to avoid UI blocking
+        Task {
+            var count = 0
+
+            for expression in allExpressions {
+                let newAccent = AccentFormatter.shared.format(expression.english)
+
+                // Only update if accent changed
+                if newAccent != expression.accent {
+                    expression.accent = newAccent
+                    count += 1
+                }
+            }
+
+            // Update UI on main thread
+            await MainActor.run {
+                regeneratedCount = count
+                isRegenerating = false
+                showingRegenerateAlert = true
+                print("[SettingsView] Regenerated \(count) expression accents")
+            }
         }
     }
 

@@ -10,6 +10,12 @@ import SwiftData
 
 @main
 struct MYPlannerApp: App {
+
+    init() {
+        // Pre-load CMU Dictionary at app start for faster first access
+        CMUDictionaryService.shared.load()
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Schedule.self,
