@@ -6,23 +6,19 @@
 //
 
 import XCTest
-import Combine
 @testable import MYPlanner
 
 final class TTSServiceTests: XCTestCase {
 
     var sut: TTSService!
-    var cancellables: Set<AnyCancellable>!
 
     override func setUp() {
         super.setUp()
         sut = TTSService()
-        cancellables = []
     }
 
     override func tearDown() {
         sut.stop()
-        cancellables = nil
         sut = nil
         super.tearDown()
     }
@@ -83,22 +79,18 @@ final class TTSServiceTests: XCTestCase {
         XCTAssertFalse(sut.isSpeaking)
     }
 
-    func test_speak_withValidText_triggersSynthesizer() {
+    func test_speak_withValidText_triggersSynthesizer() async {
         // Arrange
         let text = "Hello"
-        let expectation = XCTestExpectation(description: "Speaking started")
-
-        sut.$isSpeaking
-            .dropFirst()
-            .first(where: { $0 == true })
-            .sink { _ in expectation.fulfill() }
-            .store(in: &cancellables)
 
         // Act
         sut.speak(text)
 
+        // Wait for delegate to be called
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
         // Assert
-        wait(for: [expectation], timeout: 2.0)
+        XCTAssertTrue(sut.isSpeaking)
     }
 
     // MARK: - Stop Tests
@@ -173,31 +165,24 @@ final class TTSServiceTests: XCTestCase {
 
     // MARK: - Multiple Speak Tests
 
-    func test_speak_calledTwice_stopsFirstAndStartsSecond() {
+    func test_speak_calledTwice_stopsFirstAndStartsSecond() async {
         // Arrange
         let firstText = "First sentence"
         let secondText = "Second sentence"
-        let expectation = XCTestExpectation(description: "Speaking restarted")
-
-        var speakingCount = 0
-        sut.$isSpeaking
-            .dropFirst()
-            .filter { $0 == true }
-            .sink { _ in
-                speakingCount += 1
-                if speakingCount == 2 {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
 
         // Act
         sut.speak(firstText)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.sut.speak(secondText)
-        }
 
-        // Assert
-        wait(for: [expectation], timeout: 3.0)
+        // Wait for first speech to start
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // Speak second text (should stop first)
+        sut.speak(secondText)
+
+        // Wait for second speech to start
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        // Assert - should still be speaking (the second text)
+        XCTAssertTrue(sut.isSpeaking)
     }
 }

@@ -153,19 +153,30 @@ final class AIServiceTests: XCTestCase {
         }
     }
 
-    func test_generateExpression_withInvalidJSON_throwsError() async {
-        // Arrange
-        mockSession.mockData = "invalid json".data(using: .utf8)
+    func test_generateExpression_withEmptyData_throwsInvalidResponse() async {
+        // Arrange - empty data should throw invalidResponse
+        mockSession.mockData = Data()
 
         // Act & Assert
         do {
             _ = try await sut.generateExpression(for: "테스트")
             XCTFail("Expected error")
-        } catch is DecodingError {
+        } catch AIServiceError.invalidResponse {
             // Success - expected error
         } catch {
             XCTFail("Unexpected error: \(error)")
         }
+    }
+
+    func test_generateExpression_withPlainText_returnsText() async throws {
+        // Arrange - plain text is accepted as valid response (fallback behavior)
+        mockSession.mockData = "This is a plain text response".data(using: .utf8)
+
+        // Act
+        let result = try await sut.generateExpression(for: "테스트")
+
+        // Assert - plain text should be returned as-is
+        XCTAssertEqual(result, "This is a plain text response")
     }
 
     func test_generateExpression_withEmptyContent_throwsInvalidResponse() async {

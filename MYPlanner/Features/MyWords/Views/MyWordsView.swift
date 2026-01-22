@@ -15,6 +15,8 @@ struct MyWordsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var ttsService = TTSService()
     @State private var speakingExpressionId: UUID?
+    @State private var practiceExpression: Expression?
+    @State private var showPracticeSheet: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -51,8 +53,8 @@ struct MyWordsView: View {
                                 handleListen(expression)
                             },
                             onSpeak: {
-                                // TODO: Step 11 - Speech recognition
-                                print("Speak: \(expression.english)")
+                                practiceExpression = expression
+                                showPracticeSheet = true
                             },
                             onFavoriteToggle: {
                                 toggleFavorite(expression)
@@ -83,6 +85,11 @@ struct MyWordsView: View {
             .onChange(of: ttsService.isSpeaking) { _, isSpeaking in
                 if !isSpeaking {
                     speakingExpressionId = nil
+                }
+            }
+            .sheet(isPresented: $showPracticeSheet) {
+                if let expression = practiceExpression {
+                    SpeechPracticeSheet(expression: expression)
                 }
             }
         }
