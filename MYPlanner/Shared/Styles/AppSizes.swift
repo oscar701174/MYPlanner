@@ -22,10 +22,12 @@ enum AppSizes {
     // MARK: - Spacing
 
     enum Spacing {
+        static let xsmall: CGFloat = 2
         static let small: CGFloat = 4
         static let medium: CGFloat = 8
         static let large: CGFloat = 12
         static let extraLarge: CGFloat = 16
+        static let xlarge: CGFloat = 24
     }
 
     // MARK: - Corner Radius
@@ -45,6 +47,7 @@ enum AppSizes {
         static let body: CGFloat = 14
         static let medium: CGFloat = 16
         static let large: CGFloat = 20
+        static let xlarge: CGFloat = 22
         static let title: CGFloat = 24
     }
 

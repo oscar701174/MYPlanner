@@ -14,6 +14,8 @@ struct MyWordsTabView: View {
     @Query(sort: \Expression.createdAt, order: .reverse) private var allExpressions: [Expression]
     @State private var ttsService = TTSService()
     @State private var speakingExpressionId: UUID?
+    @State private var practiceExpression: Expression?
+    @State private var showPracticeSheet: Bool = false
 
     // Filter favorited expressions
     private var favoritedExpressions: [Expression] {
@@ -37,6 +39,11 @@ struct MyWordsTabView: View {
                     speakingExpressionId = nil
                 }
             }
+            .sheet(isPresented: $showPracticeSheet) {
+                if let expression = practiceExpression {
+                    SpeechPracticeSheet(expression: expression)
+                }
+            }
         }
     }
 
@@ -53,8 +60,8 @@ struct MyWordsTabView: View {
                         handleListen(expression)
                     },
                     onSpeak: {
-                        // TODO: Step 11 - Speech recognition
-                        print("Speak: \(expression.english)")
+                        practiceExpression = expression
+                        showPracticeSheet = true
                     },
                     onFavoriteToggle: {
                         toggleFavorite(expression)
