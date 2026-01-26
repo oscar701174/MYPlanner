@@ -3,6 +3,7 @@ import Foundation
 // MARK: - Audio Session Managing Protocol
 
 /// 오디오 세션 관리 책임 (SRP: 오직 오디오 세션만)
+@MainActor
 protocol AudioSessionManaging {
     /// 현재 활성화 상태
     var isActive: Bool { get }

@@ -16,13 +16,12 @@ struct MyWordsView: View {
     @State private var ttsService = TTSService()
     @State private var speakingExpressionId: UUID?
     @State private var practiceExpression: Expression?
-    @State private var showPracticeSheet: Bool = false
 
     var body: some View {
         NavigationStack {
-            List {
-                // Header Section
-                Section {
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    // Header Section
                     VStack(alignment: .leading, spacing: AppSizes.Spacing.large) {
                         // Tags
                         tagsRow
@@ -36,45 +35,26 @@ struct MyWordsView: View {
                             .foregroundColor(AppColors.textPrimary)
                             .padding(.top, AppSizes.Spacing.medium)
                     }
-                    .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 8, trailing: 16))
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
 
-                // Expression Cards
-                Section {
+                    // Expression Cards
                     ForEach(Array(schedule.expressions.enumerated()), id: \.element.id) { index, expression in
-                        ExpressionCard(
+                        SimpleExpressionCard(
                             index: index + 1,
                             expression: expression,
                             isListening: ttsService.isSpeaking && speakingExpressionId == expression.id,
                             currentSpeakingWord: speakingExpressionId == expression.id ? ttsService.currentWord : nil,
-                            onListen: {
-                                handleListen(expression)
-                            },
-                            onSpeak: {
-                                practiceExpression = expression
-                                showPracticeSheet = true
-                            },
-                            onFavoriteToggle: {
-                                toggleFavorite(expression)
-                            }
+                            practiceExpression: $practiceExpression,
+                            onListen: { handleListen(expression) },
+                            onFavoriteToggle: { toggleFavorite(expression) }
                         )
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                deleteExpression(expression)
-                            } label: {
-                                Label("삭제", systemImage: "trash")
-                            }
-                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                     }
                 }
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
             .background(AppColors.background)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -87,10 +67,8 @@ struct MyWordsView: View {
                     speakingExpressionId = nil
                 }
             }
-            .sheet(isPresented: $showPracticeSheet) {
-                if let expression = practiceExpression {
-                    SpeechPracticeSheet(expression: expression)
-                }
+            .sheet(item: $practiceExpression) { expression in
+                SpeechPracticeSheet(expression: expression)
             }
         }
     }
@@ -147,6 +125,160 @@ struct MyWordsView: View {
         } else {
             speakingExpressionId = expression.id
             ttsService.speak(expression.english)
+        }
+    }
+}
+
+// MARK: - SimpleExpressionCard
+
+/// Simplified expression card using Binding instead of closures for speak action
+/// This fixes SwiftUI's closure capture issue
+private struct SimpleExpressionCard: View {
+    let index: Int
+    let expression: Expression
+    let isListening: Bool
+    let currentSpeakingWord: String?
+    @Binding var practiceExpression: Expression?
+    let onListen: () -> Void
+    let onFavoriteToggle: () -> Void
+
+    private var lastRecord: PracticeRecord? {
+        expression.lastPracticeRecord
+    }
+
+    private var practiceCount: Int {
+        expression.practiceCount
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppSizes.Spacing.medium) {
+            // Header: Expression text + Favorite button
+            HStack(alignment: .top) {
+                Text("\(index). \(expression.english)")
+                    .font(.system(size: AppSizes.FontSize.medium))
+                    .foregroundColor(AppColors.textPrimary)
+
+                Spacer()
+
+                // Practice count badge (if practiced)
+                if practiceCount > 0 {
+                    HStack(spacing: 2) {
+                        Image(systemName: "mic.fill")
+                            .font(.system(size: 10))
+                        Text("\(practiceCount)")
+                            .font(.system(size: 10, weight: .medium))
+                    }
+                    .foregroundColor(AppColors.accent)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(AppColors.accentLight)
+                    .cornerRadius(AppSizes.Radius.small)
+                }
+
+                // Favorite button
+                Button(action: { onFavoriteToggle() }) {
+                    Image(systemName: expression.isFavorite ? "star.fill" : "star")
+                        .font(.system(size: AppSizes.FontSize.large))
+                        .foregroundColor(expression.isFavorite ? AppColors.accent : AppColors.textTertiary)
+                }
+                .buttonStyle(.plain)
+            }
+
+            // Accent row: Listen button + accent text with highlighting
+            HStack(spacing: AppSizes.Spacing.medium) {
+                Button {
+                    onListen()
+                } label: {
+                    Text("듣기")
+                        .font(.system(size: AppSizes.FontSize.body))
+                        .foregroundColor(AppColors.accentText)
+                        .padding(.horizontal, AppSizes.Padding.medium)
+                        .frame(height: AppSizes.Height.button)
+                        .background(isListening ? AppColors.accent.opacity(0.7) : AppColors.accent)
+                        .cornerRadius(AppSizes.Radius.small)
+                }
+                .buttonStyle(.plain)
+
+                AccentLabel(
+                    accent: expression.accent,
+                    originalText: expression.english,
+                    highlightedWord: isListening ? currentSpeakingWord : nil
+                )
+            }
+
+            // Speak button row with word results
+            HStack(spacing: AppSizes.Spacing.medium) {
+                Button {
+                    practiceExpression = expression
+                } label: {
+                    Text("말하기")
+                        .font(.system(size: AppSizes.FontSize.body))
+                        .foregroundColor(AppColors.accentText)
+                        .padding(.horizontal, AppSizes.Padding.medium)
+                        .frame(height: AppSizes.Height.button)
+                        .background(AppColors.accent)
+                        .cornerRadius(AppSizes.Radius.small)
+                }
+                .buttonStyle(.plain)
+
+                // Word results as colored text
+                if let record = lastRecord {
+                    WordResultsText(wordResults: record.wordResults)
+                }
+            }
+        }
+        .padding(AppSizes.Padding.horizontal)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minHeight: AppSizes.Height.cardLarge)
+        .background(AppColors.background)
+        .cornerRadius(AppSizes.Radius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: AppSizes.Radius.large)
+                .stroke(AppColors.border, lineWidth: AppSizes.Border.width)
+        )
+        .animation(.easeInOut(duration: 0.15), value: currentSpeakingWord)
+    }
+}
+
+// MARK: - Word Results Text
+
+/// 단어별 결과를 하나의 문장으로 표시 (상태에 따라 색상 구분)
+private struct WordResultsText: View {
+    let wordResults: [WordResult]
+
+    var body: some View {
+        Text(buildAttributedString())
+            .font(.system(size: AppSizes.FontSize.body))
+    }
+
+    private func buildAttributedString() -> AttributedString {
+        var result: AttributedString = AttributedString()
+
+        for (index, wordResult) in wordResults.enumerated() {
+            var word: AttributedString = AttributedString(wordResult.originalWord)
+            word.foregroundColor = statusColor(for: wordResult.status)
+
+            result.append(word)
+
+            // 단어 사이에 공백 추가 (마지막 단어 제외)
+            if index < wordResults.count - 1 {
+                result.append(AttributedString(" "))
+            }
+        }
+
+        return result
+    }
+
+    private func statusColor(for status: WordStatus) -> Color {
+        switch status {
+        case .correct:
+            return .green
+        case .mispronounced:
+            return .orange
+        case .missing:
+            return .red
+        case .extra:
+            return .purple
         }
     }
 }

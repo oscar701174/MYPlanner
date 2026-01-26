@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		55262FFC2F235C6B004E0416 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 55WHISPER022F0E81BB0050A8D1 /* WhisperKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		5596980F2F0E81BB0050A8D1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -47,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				55262FFC2F235C6B004E0416 /* WhisperKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,6 +111,7 @@
 			);
 			name = MYPlanner;
 			packageProductDependencies = (
+				55WHISPER022F0E81BB0050A8D1 /* WhisperKit */,
 			);
 			productName = MYPlanner;
 			productReference = 559697FF2F0E81B90050A8D1 /* MYPlanner.app */;
@@ -186,6 +192,9 @@
 			);
 			mainGroup = 559697F62F0E81B90050A8D1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				55WHISPER012F0E81BB0050A8D1 /* XCRemoteSwiftPackageReference "WhisperKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 559698002F0E81B90050A8D1 /* Products */;
 			projectDirPath = "";
@@ -573,6 +582,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		55WHISPER012F0E81BB0050A8D1 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		55WHISPER022F0E81BB0050A8D1 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 55WHISPER012F0E81BB0050A8D1 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 559697F72F0E81B90050A8D1 /* Project object */;
 }

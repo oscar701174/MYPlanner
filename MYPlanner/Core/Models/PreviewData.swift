@@ -16,7 +16,7 @@ enum PreviewData {
 
     /// Preview용 ModelContainer (샘플 데이터 포함)
     static var container: ModelContainer = {
-        let schema = Schema([Schedule.self, Expression.self])
+        let schema = Schema([Schedule.self, Expression.self, PracticeRecord.self])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
 
         do {
@@ -33,7 +33,7 @@ enum PreviewData {
 
     /// 빈 Preview용 ModelContainer
     static var emptyContainer: ModelContainer = {
-        let schema = Schema([Schedule.self, Expression.self])
+        let schema = Schema([Schedule.self, Expression.self, PracticeRecord.self])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
 
         do {
@@ -134,6 +134,50 @@ enum PreviewData {
     static var singleExpression: Expression {
         Expression(
             english: "This is an important presentation."
+        )
+    }
+
+    /// Preview용 연습 기록이 있는 Expression
+    static var expressionWithPracticeRecord: Expression {
+        let expression: Expression = Expression(
+            english: "Prepare for the meeting.",
+            isPracticed: true
+        )
+
+        let record: PracticeRecord = PracticeRecord(
+            expression: expression,
+            overallAccuracy: 0.75,
+            recognizedText: "Prepare for the meating",
+            originalText: "Prepare for the meeting",
+            engineType: "apple",
+            wordResults: [
+                WordResult(originalWord: "Prepare", recognizedWord: "Prepare", confidence: 0.9, status: .correct),
+                WordResult(originalWord: "for", recognizedWord: "for", confidence: 0.95, status: .correct),
+                WordResult(originalWord: "the", recognizedWord: "the", confidence: 0.98, status: .correct),
+                WordResult(originalWord: "meeting", recognizedWord: "meating", confidence: 0.6, status: .mispronounced)
+            ],
+            practicedAt: Date().addingTimeInterval(-3600) // 1 hour ago
+        )
+
+        expression.practiceRecords.append(record)
+        return expression
+    }
+
+    /// Preview용 연습 기록 샘플
+    static var samplePracticeRecord: PracticeRecord {
+        PracticeRecord(
+            overallAccuracy: 0.85,
+            recognizedText: "This is an important presentation",
+            originalText: "This is an important presentation.",
+            engineType: "whisper",
+            wordResults: [
+                WordResult(originalWord: "This", recognizedWord: "This", confidence: 0.95, status: .correct),
+                WordResult(originalWord: "is", recognizedWord: "is", confidence: 0.98, status: .correct),
+                WordResult(originalWord: "an", recognizedWord: "an", confidence: 0.97, status: .correct),
+                WordResult(originalWord: "important", recognizedWord: "important", confidence: 0.85, status: .correct),
+                WordResult(originalWord: "presentation", recognizedWord: "presentation", confidence: 0.88, status: .correct)
+            ],
+            practicedAt: Date().addingTimeInterval(-1800) // 30 minutes ago
         )
     }
 }

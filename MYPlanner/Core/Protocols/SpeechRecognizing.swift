@@ -3,6 +3,7 @@ import Foundation
 // MARK: - Speech Recognizing Protocol
 
 /// 음성 인식 책임 (SRP: 오직 음성→텍스트 변환만)
+@MainActor
 protocol SpeechRecognizing: AnyObject {
     /// 현재 인식 상태
     var isRecognizing: Bool { get }

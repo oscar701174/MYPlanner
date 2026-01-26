@@ -26,6 +26,14 @@ struct SettingsView: View {
     @State private var regeneratedCount: Int = 0
     @State private var isRegenerating: Bool = false
 
+    // Speech Recognition Engine Settings
+    @AppStorage("speechRecognitionEngine") private var selectedEngineRawValue: String = SpeechRecognitionEngineType.apple.rawValue
+
+    private var selectedEngine: SpeechRecognitionEngineType {
+        get { SpeechRecognitionEngineType(rawValue: selectedEngineRawValue) ?? .apple }
+        set { selectedEngineRawValue = newValue.rawValue }
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -34,6 +42,9 @@ struct SettingsView: View {
 
                 // Voice Settings Section
                 voiceSection
+
+                // Speech Recognition Section
+                speechRecognitionSection
 
                 // Data Management Section
                 dataManagementSection
@@ -278,6 +289,49 @@ struct SettingsView: View {
         ttsService.speak("Hello! This is a test of the current voice setting.")
     }
 
+    // MARK: - Speech Recognition Section
+
+    private var speechRecognitionSection: some View {
+        Section {
+            ForEach(SpeechRecognitionEngineType.allCases) { engine in
+                Button(action: { selectedEngineRawValue = engine.rawValue }) {
+                    HStack {
+                        Image(systemName: engine.iconName)
+                            .frame(width: 24)
+                            .foregroundColor(AppColors.accent)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(engine.displayName)
+                                .font(.system(size: AppSizes.FontSize.medium))
+                                .foregroundColor(AppColors.textPrimary)
+
+                            Text(engine.description)
+                                .font(.system(size: AppSizes.FontSize.small))
+                                .foregroundColor(AppColors.textTertiary)
+                        }
+
+                        Spacer()
+
+                        if selectedEngineRawValue == engine.rawValue {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(AppColors.accent)
+                        } else {
+                            Image(systemName: "circle")
+                                .foregroundColor(AppColors.textTertiary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        } header: {
+            Text("Speech Recognition Engine")
+        } footer: {
+            Text("Apple Speech uses iOS built-in recognition (faster, may use network). Whisper runs completely on-device (more accurate, fully offline).")
+                .font(.system(size: AppSizes.FontSize.small))
+                .foregroundColor(AppColors.textTertiary)
+        }
+    }
+
     // MARK: - Data Management Section
 
     private var dataManagementSection: some View {
@@ -383,7 +437,7 @@ struct SettingsView: View {
 
     private var appInfoSection: some View {
         Section {
-            SettingsRow(icon: "mic.fill", title: "Speech Recognition", value: "iOS Speech Framework")
+            SettingsRow(icon: "mic.fill", title: "Speech Recognition", value: selectedEngine.displayName)
             SettingsRow(icon: "speaker.wave.2.fill", title: "Text-to-Speech", value: "AVSpeechSynthesizer")
             SettingsRow(icon: "brain", title: "AI Provider", value: "Claude (Anthropic)")
             SettingsRow(icon: "internaldrive", title: "Data Storage", value: "SwiftData (Local)")

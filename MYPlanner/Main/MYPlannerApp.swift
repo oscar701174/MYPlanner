@@ -19,7 +19,8 @@ struct MYPlannerApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Schedule.self,
-            Expression.self
+            Expression.self,
+            PracticeRecord.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,

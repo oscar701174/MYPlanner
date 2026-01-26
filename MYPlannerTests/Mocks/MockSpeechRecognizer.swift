@@ -4,6 +4,7 @@ import Foundation
 // MARK: - Mock Speech Recognizer
 
 /// 테스트용 Mock 음성 인식기
+@MainActor
 final class MockSpeechRecognizer: SpeechRecognizing {
 
     // MARK: - Stub Values

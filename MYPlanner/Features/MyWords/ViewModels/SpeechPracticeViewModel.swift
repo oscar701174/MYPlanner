@@ -5,6 +5,7 @@ import Foundation
 /// 발음 연습 상태
 enum SpeechPracticeState: Equatable {
     case idle           // 대기 중
+    case loading        // 모델 로딩 중 (WhisperKit)
     case recording      // 녹음 중
     case evaluating     // 평가 중
     case result         // 결과 표시
@@ -20,7 +21,7 @@ final class SpeechPracticeViewModel {
 
     // MARK: - Dependencies
 
-    private let speechRecognizer: SpeechRecognizing
+    private var speechRecognizer: SpeechRecognizing
     private let evaluator: PronunciationEvaluating
 
     // MARK: - Published State
@@ -30,6 +31,7 @@ final class SpeechPracticeViewModel {
     private(set) var error: SpeechRecognitionError?
     var recognizedText: String = ""
     private(set) var originalText: String = ""
+    private(set) var currentEngineType: SpeechRecognitionEngineType = .apple
 
     // MARK: - Internal
 
@@ -38,11 +40,41 @@ final class SpeechPracticeViewModel {
     // MARK: - Initialization
 
     init(
-        speechRecognizer: SpeechRecognizing = SpeechRecognizer(),
-        evaluator: PronunciationEvaluating = PronunciationEvaluator()
+        speechRecognizer: SpeechRecognizing? = nil,
+        evaluator: PronunciationEvaluating? = nil,
+        engineType: SpeechRecognitionEngineType = .apple
     ) {
-        self.speechRecognizer = speechRecognizer
-        self.evaluator = evaluator
+        self.currentEngineType = engineType
+        self.speechRecognizer = speechRecognizer ?? Self.createRecognizer(for: engineType)
+        self.evaluator = evaluator ?? PronunciationEvaluator()
+    }
+
+    // MARK: - Engine Selection
+
+    /// 음성 인식 엔진 변경
+    func switchEngine(to engineType: SpeechRecognitionEngineType) {
+        guard engineType != currentEngineType else { return }
+
+        // 현재 인식 중이면 중지
+        if state == .recording {
+            stopPractice()
+        }
+
+        currentEngineType = engineType
+        speechRecognizer = Self.createRecognizer(for: engineType)
+
+        // 상태 초기화
+        reset()
+    }
+
+    /// 엔진 타입에 맞는 인식기 생성
+    private static func createRecognizer(for engineType: SpeechRecognitionEngineType) -> SpeechRecognizing {
+        switch engineType {
+        case .apple:
+            return SpeechRecognizer()
+        case .whisper:
+            return WhisperRecognizer()
+        }
     }
 
     // MARK: - Public Methods

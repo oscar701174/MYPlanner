@@ -4,6 +4,7 @@ import Foundation
 // MARK: - Mock Audio Session Manager
 
 /// 테스트용 Mock 오디오 세션 관리자
+@MainActor
 final class MockAudioSessionManager: AudioSessionManaging {
 
     // MARK: - Stub Values

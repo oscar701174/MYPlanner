@@ -30,11 +30,19 @@ enum ActionButtonType {
 
 struct ActionButton: View {
     let type: ActionButtonType
-    var isActive: Bool = false
-    var onTap: (() -> Void)?
+    let isActive: Bool
+    let onTap: (() -> Void)?
+
+    init(type: ActionButtonType, isActive: Bool = false, onTap: (() -> Void)? = nil) {
+        self.type = type
+        self.isActive = isActive
+        self.onTap = onTap
+    }
 
     var body: some View {
-        Button(action: { onTap?() }) {
+        Button(action: {
+            onTap?()
+        }) {
             Text(type.title)
                 .font(.system(size: AppSizes.FontSize.body))
                 .foregroundColor(AppColors.accentText)

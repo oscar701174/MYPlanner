@@ -4,6 +4,7 @@ import Speech
 // MARK: - Speech Recognizer
 
 /// iOS Speech Framework 기반 음성 인식 구현체
+@MainActor
 final class SpeechRecognizer: NSObject, SpeechRecognizing {
 
     // MARK: - Dependencies
@@ -36,10 +37,10 @@ final class SpeechRecognizer: NSObject, SpeechRecognizing {
 
     init(
         locale: Locale = Locale(identifier: "en-US"),
-        audioSession: AudioSessionManaging = AudioSessionManager()
+        audioSession: AudioSessionManaging? = nil
     ) {
         self.speechRecognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer()!
-        self.audioSession = audioSession
+        self.audioSession = audioSession ?? AudioSessionManager()
         super.init()
 
         // 초기 권한 상태 확인

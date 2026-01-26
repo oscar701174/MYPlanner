@@ -3,6 +3,7 @@ import AVFoundation
 // MARK: - Audio Session Manager
 
 /// 오디오 세션 관리 구현체
+@MainActor
 final class AudioSessionManager: AudioSessionManaging {
 
     // MARK: - Properties

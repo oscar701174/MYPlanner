@@ -11,8 +11,8 @@ final class PronunciationEvaluator: PronunciationEvaluating {
 
     // MARK: - Initialization
 
-    init(textComparator: TextComparing = TextComparator()) {
-        self.textComparator = textComparator
+    init(textComparator: TextComparing? = nil) {
+        self.textComparator = textComparator ?? TextComparator()
     }
 
     // MARK: - Public Methods

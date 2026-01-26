@@ -183,7 +183,88 @@ final class SpeechPracticeViewModelTests: XCTestCase {
     // MARK: - State Enum Tests
 
     func test_practiceState_allCases() {
-        let allCases: [SpeechPracticeState] = [.idle, .recording, .evaluating, .result, .error]
-        XCTAssertEqual(allCases.count, 5)
+        let allCases: [SpeechPracticeState] = [.idle, .loading, .recording, .evaluating, .result, .error]
+        XCTAssertEqual(allCases.count, 6)
+    }
+
+    // MARK: - Engine Selection Tests
+
+    func test_init_defaultEngineType_isApple() {
+        let viewModel: SpeechPracticeViewModel = SpeechPracticeViewModel(
+            speechRecognizer: mockRecognizer,
+            evaluator: mockEvaluator
+        )
+
+        XCTAssertEqual(viewModel.currentEngineType, .apple)
+    }
+
+    func test_init_withWhisperEngine_setsEngineType() {
+        let viewModel: SpeechPracticeViewModel = SpeechPracticeViewModel(
+            speechRecognizer: mockRecognizer,
+            evaluator: mockEvaluator,
+            engineType: .whisper
+        )
+
+        XCTAssertEqual(viewModel.currentEngineType, .whisper)
+    }
+
+    func test_switchEngine_changesEngineType() {
+        sut.switchEngine(to: .whisper)
+
+        XCTAssertEqual(sut.currentEngineType, .whisper)
+    }
+
+    func test_switchEngine_toSameEngine_doesNothing() {
+        sut.switchEngine(to: .apple)
+
+        // 아무 변화 없어야 함
+        XCTAssertEqual(sut.currentEngineType, .apple)
+        XCTAssertEqual(sut.state, .idle)
+    }
+
+    func test_switchEngine_whileRecording_stopsRecognitionFirst() async {
+        mockRecognizer.stubAuthorizationStatus = .authorized
+        await sut.startPractice(for: "hello")
+
+        XCTAssertEqual(sut.state, .recording)
+
+        sut.switchEngine(to: .whisper)
+
+        XCTAssertEqual(mockRecognizer.stopRecognitionCallCount, 1)
+        XCTAssertEqual(sut.state, .idle)
+    }
+
+    func test_switchEngine_resetsState() async {
+        mockRecognizer.stubAuthorizationStatus = .authorized
+        mockEvaluator.stubScore = PronunciationScore(overallAccuracy: 0.9, wordResults: [])
+
+        await sut.startPractice(for: "hello")
+        sut.recognizedText = "hello"
+        sut.stopPractice()
+
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(sut.state, .result)
+
+        sut.switchEngine(to: .whisper)
+
+        XCTAssertEqual(sut.state, .idle)
+        XCTAssertNil(sut.score)
+        XCTAssertTrue(sut.recognizedText.isEmpty)
+    }
+
+    // MARK: - Engine Type Tests
+
+    func test_engineType_displayName() {
+        XCTAssertEqual(SpeechRecognitionEngineType.apple.displayName, "Apple Speech")
+        XCTAssertEqual(SpeechRecognitionEngineType.whisper.displayName, "Whisper (On-device)")
+    }
+
+    func test_engineType_iconName() {
+        XCTAssertEqual(SpeechRecognitionEngineType.apple.iconName, "apple.logo")
+        XCTAssertEqual(SpeechRecognitionEngineType.whisper.iconName, "waveform.badge.mic")
+    }
+
+    func test_engineType_allCases() {
+        XCTAssertEqual(SpeechRecognitionEngineType.allCases.count, 2)
     }
 }

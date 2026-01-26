@@ -14,18 +14,41 @@ import SwiftData
 struct SpeechPracticeSheet: View {
     let expression: Expression
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
-    @State private var viewModel: SpeechPracticeViewModel = SpeechPracticeViewModel()
+    // Settings에서 선택한 엔진 사용
+    @AppStorage("speechRecognitionEngine") private var selectedEngineRawValue: String = SpeechRecognitionEngineType.apple.rawValue
+
+    @State private var viewModel: SpeechPracticeViewModel
+
+    private var engineType: SpeechRecognitionEngineType {
+        SpeechRecognitionEngineType(rawValue: selectedEngineRawValue) ?? .apple
+    }
+
+    init(expression: Expression) {
+        self.expression = expression
+
+        // AppStorage 기본값으로 초기 엔진 타입 결정
+        let engineRawValue: String = UserDefaults.standard.string(forKey: "speechRecognitionEngine") ?? SpeechRecognitionEngineType.apple.rawValue
+        let defaultEngine: SpeechRecognitionEngineType = SpeechRecognitionEngineType(rawValue: engineRawValue) ?? .apple
+        self._viewModel = State(initialValue: SpeechPracticeViewModel(engineType: defaultEngine))
+    }
 
     var body: some View {
+        let english: String = expression.english
+        let accent: String = expression.accent
+
         NavigationStack {
             VStack {
                 switch viewModel.state {
                 case .idle:
-                    idleView
+                    idleView(english: english, accent: accent)
+
+                case .loading:
+                    loadingView
 
                 case .recording:
-                    recordingView
+                    recordingView(accent: accent)
 
                 case .evaluating:
                     evaluatingView
@@ -39,17 +62,18 @@ struct SpeechPracticeSheet: View {
                             onRetry: {
                                 Task {
                                     viewModel.reset()
-                                    await viewModel.startPractice(for: expression.english)
+                                    await viewModel.startPractice(for: english)
                                 }
                             },
                             onDismiss: {
+                                savePracticeResult(score: score, viewModel: viewModel)
                                 dismiss()
                             }
                         )
                     }
 
                 case .error:
-                    errorView
+                    errorView(viewModel: viewModel)
                 }
             }
             .navigationTitle("Practice Speaking")
@@ -67,17 +91,30 @@ struct SpeechPracticeSheet: View {
 
     // MARK: - Idle View
 
-    private var idleView: some View {
+    private func idleView(english: String, accent: String) -> some View {
         VStack(spacing: AppSizes.Spacing.xlarge) {
             Spacer()
 
-            // Expression to practice
+            // Engine indicator
+            HStack(spacing: AppSizes.Spacing.small) {
+                Image(systemName: engineType.iconName)
+                    .font(.system(size: AppSizes.FontSize.small))
+                Text(engineType.displayName)
+                    .font(.system(size: AppSizes.FontSize.small))
+            }
+            .foregroundColor(AppColors.textTertiary)
+            .padding(.horizontal, AppSizes.Padding.small)
+            .padding(.vertical, 4)
+            .background(AppColors.surface)
+            .cornerRadius(AppSizes.Radius.small)
+
+            // Expression to practice (with accent notation)
             VStack(spacing: AppSizes.Spacing.medium) {
                 Text("Say this expression:")
                     .font(.system(size: AppSizes.FontSize.medium))
                     .foregroundColor(AppColors.textSecondary)
 
-                Text(expression.english)
+                Text(accent)
                     .font(.system(size: AppSizes.FontSize.xlarge, weight: .semibold))
                     .foregroundColor(AppColors.textPrimary)
                     .multilineTextAlignment(.center)
@@ -94,7 +131,7 @@ struct SpeechPracticeSheet: View {
             // Start button
             Button(action: {
                 Task {
-                    await viewModel.startPractice(for: expression.english)
+                    await viewModel.startPractice(for: english)
                 }
             }) {
                 HStack {
@@ -113,19 +150,40 @@ struct SpeechPracticeSheet: View {
         }
     }
 
+    // MARK: - Loading View (WhisperKit model loading)
+
+    private var loadingView: some View {
+        VStack(spacing: AppSizes.Spacing.large) {
+            Spacer()
+
+            ProgressView()
+                .scaleEffect(1.5)
+
+            Text("Loading Whisper model...")
+                .font(.system(size: AppSizes.FontSize.medium))
+                .foregroundColor(AppColors.textSecondary)
+
+            Text("This may take a moment on first use")
+                .font(.system(size: AppSizes.FontSize.small))
+                .foregroundColor(AppColors.textTertiary)
+
+            Spacer()
+        }
+    }
+
     // MARK: - Recording View
 
-    private var recordingView: some View {
+    private func recordingView(accent: String) -> some View {
         VStack(spacing: AppSizes.Spacing.xlarge) {
             Spacer()
 
-            // Expression being practiced
+            // Expression being practiced (with accent notation)
             VStack(spacing: AppSizes.Spacing.medium) {
                 Text("Listening...")
                     .font(.system(size: AppSizes.FontSize.medium))
                     .foregroundColor(AppColors.textSecondary)
 
-                Text(expression.english)
+                Text(accent)
                     .font(.system(size: AppSizes.FontSize.large, weight: .medium))
                     .foregroundColor(AppColors.textTertiary)
                     .multilineTextAlignment(.center)
@@ -203,7 +261,7 @@ struct SpeechPracticeSheet: View {
 
     // MARK: - Error View
 
-    private var errorView: some View {
+    private func errorView(viewModel: SpeechPracticeViewModel) -> some View {
         VStack(spacing: AppSizes.Spacing.xlarge) {
             Spacer()
 
@@ -216,7 +274,7 @@ struct SpeechPracticeSheet: View {
                     .font(.system(size: AppSizes.FontSize.large, weight: .semibold))
                     .foregroundColor(AppColors.textPrimary)
 
-                Text(errorMessage)
+                Text(errorMessage(for: viewModel))
                     .font(.system(size: AppSizes.FontSize.medium))
                     .foregroundColor(AppColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -256,12 +314,20 @@ struct SpeechPracticeSheet: View {
 
     // MARK: - Helpers
 
-    private var errorMessage: String {
+    private func errorMessage(for viewModel: SpeechPracticeViewModel) -> String {
         switch viewModel.error {
         case .notAuthorized:
-            return "Please allow microphone and speech recognition access in Settings to practice pronunciation."
+            if engineType == .whisper {
+                return "Please allow microphone access in Settings to practice pronunciation."
+            } else {
+                return "Please allow microphone and speech recognition access in Settings to practice pronunciation."
+            }
         case .notAvailable:
-            return "Speech recognition is not available on this device."
+            if engineType == .whisper {
+                return "Whisper model could not be loaded. Please try again."
+            } else {
+                return "Speech recognition is not available on this device."
+            }
         case .audioEngineError:
             return "Failed to start audio recording. Please try again."
         case .recognitionFailed(let message):
@@ -275,6 +341,27 @@ struct SpeechPracticeSheet: View {
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
         }
+    }
+
+    // MARK: - Save Practice Result
+
+    private func savePracticeResult(score: PronunciationScore, viewModel: SpeechPracticeViewModel) {
+        let record: PracticeRecord = PracticeRecord(
+            expression: expression,
+            overallAccuracy: score.overallAccuracy,
+            recognizedText: viewModel.recognizedText,
+            originalText: viewModel.originalText,
+            engineType: viewModel.currentEngineType.rawValue,
+            wordResults: score.wordResults,
+            practicedAt: Date()
+        )
+
+        // SwiftData에 레코드 삽입 (relationship은 자동 연결됨)
+        modelContext.insert(record)
+        expression.isPracticed = true
+
+        // 변경사항 즉시 저장하여 동기화 보장
+        try? modelContext.save()
     }
 }
 
