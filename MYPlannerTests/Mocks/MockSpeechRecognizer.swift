@@ -21,6 +21,8 @@ final class MockSpeechRecognizer: SpeechRecognizing {
     // MARK: - State
 
     private(set) var isRecognizing: Bool = false
+    var recordedSamples: [Float] = []
+    var sampleRate: Int = 16000
 
     var authorizationStatus: SpeechAuthorizationStatus {
         return stubAuthorizationStatus
