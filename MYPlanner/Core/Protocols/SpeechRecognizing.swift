@@ -14,6 +14,12 @@ protocol SpeechRecognizing: AnyObject {
     /// 인식 결과 스트림 (AsyncSequence)
     var recognitionResults: AsyncStream<SpeechRecognitionResult> { get }
 
+    /// 녹음된 오디오 샘플 (강세 분석용)
+    var recordedSamples: [Float] { get }
+
+    /// 오디오 샘플 레이트
+    var sampleRate: Int { get }
+
     /// 권한 요청
     func requestAuthorization() async -> SpeechAuthorizationStatus
 

@@ -189,6 +189,19 @@ struct LastPracticeResultView: View {
                     .foregroundColor(AppColors.textPrimary)
             }
 
+            // Spoken accent (강세 분석 결과)
+            if let spokenAccent = record.spokenAccent, !spokenAccent.isEmpty {
+                VStack(alignment: .leading, spacing: AppSizes.Spacing.small) {
+                    Text("Your stress pattern:")
+                        .font(.system(size: AppSizes.FontSize.small))
+                        .foregroundColor(AppColors.textTertiary)
+
+                    Text(spokenAccent)
+                        .font(.system(size: AppSizes.FontSize.small, weight: .medium, design: .monospaced))
+                        .foregroundColor(AppColors.accent)
+                }
+            }
+
             VStack(alignment: .leading, spacing: AppSizes.Spacing.small) {
                 Text("You said:")
                     .font(.system(size: AppSizes.FontSize.small))

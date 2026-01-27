@@ -14,6 +14,7 @@ struct PracticeResultView: View {
     let score: PronunciationScore
     let originalText: String
     let recognizedText: String
+    let spokenAccent: String?
     var onRetry: (() -> Void)?
     var onDismiss: (() -> Void)?
 
@@ -101,6 +102,20 @@ struct PracticeResultView: View {
                         WordResultChip(wordResult: wordResult)
                     }
                 }
+            }
+
+            // Spoken accent (강세 분석 결과)
+            if let accent = spokenAccent, !accent.isEmpty {
+                VStack(alignment: .leading, spacing: AppSizes.Spacing.xsmall) {
+                    Text("Your stress pattern:")
+                        .font(.system(size: AppSizes.FontSize.small))
+                        .foregroundColor(AppColors.textTertiary)
+
+                    Text(accent)
+                        .font(.system(size: AppSizes.FontSize.large, weight: .medium, design: .monospaced))
+                        .foregroundColor(AppColors.textPrimary)
+                }
+                .padding(.top, AppSizes.Spacing.small)
             }
 
             // Recognized text
@@ -234,6 +249,7 @@ private struct WordResultChip: View {
             ]
         ),
         originalText: "Prepare for the meeting",
-        recognizedText: "Prepare for the meating"
+        recognizedText: "Prepare for the meating",
+        spokenAccent: "prepare«for»«the»MEETING"
     )
 }

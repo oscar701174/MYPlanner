@@ -30,6 +30,9 @@ final class PracticeRecord {
     /// 사용한 엔진 타입 (apple / whisper)
     var engineType: String
 
+    /// 사용자가 발음한 강세 패턴 (예: "ihavaMEETing")
+    var spokenAccent: String?
+
     // MARK: - Word Results (JSON encoded)
 
     /// 단어별 결과 (JSON)
@@ -49,6 +52,7 @@ final class PracticeRecord {
         originalText: String,
         engineType: String = "apple",
         wordResults: [WordResult] = [],
+        spokenAccent: String? = nil,
         practicedAt: Date = Date()
     ) {
         self.id = id
@@ -57,6 +61,7 @@ final class PracticeRecord {
         self.recognizedText = recognizedText
         self.originalText = originalText
         self.engineType = engineType
+        self.spokenAccent = spokenAccent
         self.practicedAt = practicedAt
 
         // Encode word results to JSON

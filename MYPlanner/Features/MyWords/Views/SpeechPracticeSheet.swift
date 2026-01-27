@@ -59,6 +59,7 @@ struct SpeechPracticeSheet: View {
                             score: score,
                             originalText: viewModel.originalText,
                             recognizedText: viewModel.recognizedText,
+                            spokenAccent: viewModel.spokenAccent.isEmpty ? nil : viewModel.spokenAccent,
                             onRetry: {
                                 Task {
                                     viewModel.reset()
@@ -353,6 +354,7 @@ struct SpeechPracticeSheet: View {
             originalText: viewModel.originalText,
             engineType: viewModel.currentEngineType.rawValue,
             wordResults: score.wordResults,
+            spokenAccent: viewModel.spokenAccent.isEmpty ? nil : viewModel.spokenAccent,
             practicedAt: Date()
         )
 

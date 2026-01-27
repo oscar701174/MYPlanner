@@ -23,6 +23,7 @@ final class SpeechPracticeViewModel {
 
     private var speechRecognizer: SpeechRecognizing
     private let evaluator: PronunciationEvaluating
+    private let stressAnalyzer: SpokenStressAnalyzing
 
     // MARK: - Published State
 
@@ -33,6 +34,9 @@ final class SpeechPracticeViewModel {
     private(set) var originalText: String = ""
     private(set) var currentEngineType: SpeechRecognitionEngineType = .apple
 
+    /// 사용자가 발음한 강세 패턴 (예: "ihavaMEETing")
+    private(set) var spokenAccent: String = ""
+
     // MARK: - Internal
 
     private var recognitionTask: Task<Void, Never>?
@@ -42,11 +46,13 @@ final class SpeechPracticeViewModel {
     init(
         speechRecognizer: SpeechRecognizing? = nil,
         evaluator: PronunciationEvaluating? = nil,
+        stressAnalyzer: SpokenStressAnalyzing? = nil,
         engineType: SpeechRecognitionEngineType = .apple
     ) {
         self.currentEngineType = engineType
         self.speechRecognizer = speechRecognizer ?? Self.createRecognizer(for: engineType)
         self.evaluator = evaluator ?? PronunciationEvaluator()
+        self.stressAnalyzer = stressAnalyzer ?? SpokenStressAnalyzer.shared
     }
 
     // MARK: - Engine Selection
@@ -160,6 +166,7 @@ final class SpeechPracticeViewModel {
         error = nil
         recognizedText = ""
         originalText = ""
+        spokenAccent = ""
     }
 
     // MARK: - Private Methods
@@ -184,6 +191,21 @@ final class SpeechPracticeViewModel {
                 segments: [],
                 confidence: 0.8
             )
+        }
+
+        // 강세 분석 (오디오 샘플이 있는 경우)
+        let samples: [Float] = speechRecognizer.recordedSamples
+        let sampleRate: Int = speechRecognizer.sampleRate
+
+        if !samples.isEmpty {
+            let stressResult: SpokenStressResult = stressAnalyzer.analyzeStress(
+                samples: samples,
+                sampleRate: sampleRate,
+                recognizedText: recognitionResult.text
+            )
+            spokenAccent = stressResult.accentNotation
+        } else {
+            spokenAccent = recognitionResult.text.lowercased()
         }
 
         // 비동기 평가

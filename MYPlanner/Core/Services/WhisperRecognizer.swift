@@ -36,7 +36,15 @@ final class WhisperRecognizer: NSObject, SpeechRecognizing {
     // MARK: - Configuration
 
     private let modelName: String
-    private let sampleRate: Double = 16000.0
+    private let audioSampleRate: Double = 16000.0
+
+    // MARK: - Audio Access (for stress analysis)
+
+    /// 녹음된 오디오 샘플 (강세 분석용)
+    var recordedSamples: [Float] { audioBuffer }
+
+    /// 오디오 샘플 레이트
+    var sampleRate: Int { Int(audioSampleRate) }
 
     // MARK: - Initialization
 
@@ -117,7 +125,7 @@ final class WhisperRecognizer: NSObject, SpeechRecognizing {
         // 16kHz로 리샘플링이 필요한 경우를 위한 컨버터 설정
         let targetFormat: AVAudioFormat? = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
-            sampleRate: sampleRate,
+            sampleRate: audioSampleRate,
             channels: 1,
             interleaved: false
         )
@@ -304,10 +312,11 @@ final class WhisperRecognizer: NSObject, SpeechRecognizing {
         )
     }
 
-    /// 리소스 정리
+    /// 리소스 정리 (audioBuffer는 유지 - 강세 분석에 필요)
     private func cleanup() {
         audioEngine = nil
-        audioBuffer = []
+        // audioBuffer는 여기서 초기화하지 않음
+        // startRecognition()에서 초기화됨
 
         // 오디오 세션 비활성화
         try? audioSession.deactivate()

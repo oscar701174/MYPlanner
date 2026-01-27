@@ -206,7 +206,7 @@ private struct SimpleExpressionCard: View {
                 )
             }
 
-            // Speak button row with word results
+            // Speak button row with spoken accent
             HStack(spacing: AppSizes.Spacing.medium) {
                 Button {
                     practiceExpression = expression
@@ -221,9 +221,13 @@ private struct SimpleExpressionCard: View {
                 }
                 .buttonStyle(.plain)
 
-                // Word results as colored text
-                if let record = lastRecord {
-                    WordResultsText(wordResults: record.wordResults)
+                // Spoken accent (user's pronunciation stress pattern)
+                if let record = lastRecord, let spokenAccent = record.spokenAccent, !spokenAccent.isEmpty {
+                    AccentLabel(
+                        accent: spokenAccent,
+                        originalText: record.recognizedText,
+                        highlightedWord: nil
+                    )
                 }
             }
         }
@@ -237,49 +241,6 @@ private struct SimpleExpressionCard: View {
                 .stroke(AppColors.border, lineWidth: AppSizes.Border.width)
         )
         .animation(.easeInOut(duration: 0.15), value: currentSpeakingWord)
-    }
-}
-
-// MARK: - Word Results Text
-
-/// 단어별 결과를 하나의 문장으로 표시 (상태에 따라 색상 구분)
-private struct WordResultsText: View {
-    let wordResults: [WordResult]
-
-    var body: some View {
-        Text(buildAttributedString())
-            .font(.system(size: AppSizes.FontSize.body))
-    }
-
-    private func buildAttributedString() -> AttributedString {
-        var result: AttributedString = AttributedString()
-
-        for (index, wordResult) in wordResults.enumerated() {
-            var word: AttributedString = AttributedString(wordResult.originalWord)
-            word.foregroundColor = statusColor(for: wordResult.status)
-
-            result.append(word)
-
-            // 단어 사이에 공백 추가 (마지막 단어 제외)
-            if index < wordResults.count - 1 {
-                result.append(AttributedString(" "))
-            }
-        }
-
-        return result
-    }
-
-    private func statusColor(for status: WordStatus) -> Color {
-        switch status {
-        case .correct:
-            return .green
-        case .mispronounced:
-            return .orange
-        case .missing:
-            return .red
-        case .extra:
-            return .purple
-        }
     }
 }
 

@@ -22,6 +22,15 @@ final class SpeechRecognizer: NSObject, SpeechRecognizing {
     private var audioEngine: AVAudioEngine?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    private var audioBuffer: [Float] = []
+
+    // MARK: - Audio Access (for stress analysis)
+
+    /// 녹음된 오디오 샘플 (강세 분석용)
+    var recordedSamples: [Float] { audioBuffer }
+
+    /// 오디오 샘플 레이트 (Apple Speech는 디바이스 기본 샘플레이트 사용)
+    var sampleRate: Int { 16000 }
 
     // MARK: - AsyncStream
 
@@ -82,6 +91,9 @@ final class SpeechRecognizer: NSObject, SpeechRecognizing {
             throw SpeechRecognitionError.audioEngineError
         }
 
+        // 오디오 버퍼 초기화
+        audioBuffer = []
+
         // 오디오 엔진 설정
         audioEngine = AVAudioEngine()
         guard let audioEngine = audioEngine else {
@@ -113,6 +125,17 @@ final class SpeechRecognizer: NSObject, SpeechRecognizing {
 
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
             self?.recognitionRequest?.append(buffer)
+
+            // 강세 분석용 오디오 버퍼 저장
+            if let floatData: UnsafeMutablePointer<Float> = buffer.floatChannelData?[0] {
+                let samples: [Float] = Array(UnsafeBufferPointer(
+                    start: floatData,
+                    count: Int(buffer.frameLength)
+                ))
+                Task { @MainActor [weak self] in
+                    self?.audioBuffer.append(contentsOf: samples)
+                }
+            }
         }
 
         // 오디오 엔진 시작
@@ -218,12 +241,14 @@ final class SpeechRecognizer: NSObject, SpeechRecognizing {
         }
     }
 
-    /// 리소스 정리
+    /// 리소스 정리 (audioBuffer는 유지 - 강세 분석에 필요)
     private func cleanup() {
         recognitionRequest = nil
         recognitionTask?.cancel()
         recognitionTask = nil
         audioEngine = nil
+        // audioBuffer는 여기서 초기화하지 않음
+        // startRecognition()에서 초기화됨
 
         // 오디오 세션 비활성화
         try? audioSession.deactivate()
